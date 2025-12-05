@@ -1,12 +1,11 @@
 package io.kapaseker.kharcho.examples
 
 import io.kapaseker.kharcho.Jsoup
-import io.kapaseker.kharcho.helper.Validate
+import io.kapaseker.kharcho.Kharcho
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.Element
 import io.kapaseker.kharcho.nodes.Node
 import io.kapaseker.kharcho.nodes.TextNode
-import io.kapaseker.kharcho.select.Elements
 import io.kapaseker.kharcho.select.NodeVisitor
 import java.io.IOException
 
@@ -28,7 +27,7 @@ import java.io.IOException
 
 @Throws(IOException::class)
 fun main(args: Array<String>) {
-    val doc = Jsoup.parse(fetchContent("https://nba.hupu.com/"))
+    val doc = Kharcho.parse(fetchContent("https://nba.hupu.com/"))
     val plainText = getPlainText(doc)
     println(plainText)
 }
