@@ -21,7 +21,6 @@ internal abstract class TreeBuilder {
     var settings: ParseSettings? = null
     var tagSet: TagSet? = null // the tags we're using in this parse
 
-    @Nullable
     var nodeListener: NodeVisitor? = null // optional listener for node add / removes
 
     private var start: Token.StartTag? = null // start tag to process
@@ -70,21 +69,21 @@ internal abstract class TreeBuilder {
 
     fun parseFragment(
         inputFragment: Reader,
-        @Nullable context: Element?,
+        context: Element?,
         baseUri: String,
         parser: Parser
-    ): MutableList<Node?>? {
+    ): MutableList<Node> {
         initialiseParse(inputFragment, baseUri, parser)
         initialiseParseFragment(context)
         runParser()
         return completeParseFragment()
     }
 
-    open fun initialiseParseFragment(@Nullable context: Element?) {
+    open fun initialiseParseFragment(context: Element?) {
         // in Html, sets up context; no-op in XML
     }
 
-    abstract fun completeParseFragment(): MutableList<Node?>?
+    abstract fun completeParseFragment(): MutableList<Node>
 
     /** Set the node listener, which will then get callbacks for node insert and removals.  */
     fun nodeListener(nodeListener: NodeVisitor?) {

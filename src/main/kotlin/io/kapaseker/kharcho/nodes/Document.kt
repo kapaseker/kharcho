@@ -62,7 +62,6 @@ class Document private constructor(
      * Returns this Document's doctype.
      * @return document type, or null if not set
      */
-    @Nullable
     fun documentType(): DocumentType? {
         for (node in childNodes) {
             if (node is DocumentType) return node
@@ -113,7 +112,7 @@ class Document private constructor(
      * @return `body` element for documents with a `<body>`, a new `<body>` element if the document
      * had no contents, or the outermost `<frameset> element` for frameset documents.
      */
-    fun body(): Element? {
+    fun body(): Element {
         val html = htmlEl()
         var el = html.firstElementChild()
         while (el != null) {

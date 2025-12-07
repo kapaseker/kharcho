@@ -2,14 +2,12 @@ package io.kapaseker.kharcho.helper
 
 import io.kapaseker.kharcho.internal.ControllableInputStream
 import io.kapaseker.kharcho.internal.Normalizer
-import io.kapaseker.kharcho.internal.SharedConstants
 import io.kapaseker.kharcho.internal.SimpleStreamReader
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.Comment
 import io.kapaseker.kharcho.nodes.Document
 import io.kapaseker.kharcho.nodes.XmlDeclaration
 import io.kapaseker.kharcho.parser.Parser
-import io.kapaseker.kharcho.parser.StreamParser
 import io.kapaseker.kharcho.select.Selector
 import java.io.*
 import java.nio.ByteBuffer
@@ -115,44 +113,6 @@ object DataUtil {
         return parseInputStream(openStream(path), charsetName, baseUri, parser)
     }
 
-    /**
-     * Returns a [StreamParser] that will parse the supplied file progressively.
-     * Files that are compressed with gzip (and end in `.gz` or `.z`)
-     * are supported in addition to uncompressed files.
-     *
-     * @param path file to load
-     * @param charset (optional) character set of input; specify `null` to attempt to autodetect from metadata.
-     * A BOM in the file will always override this setting.
-     * @param baseUri base URI of document, to resolve relative links against
-     * @param parser underlying HTML or XML parser to use.
-     *
-     * @return Document
-     * @throws IOException on IO error
-     * @since 1.18.2
-     */
-    @Throws(IOException::class)
-    fun streamParser(
-        path: Path,
-        charset: Charset?,
-        baseUri: String,
-        parser: Parser
-    ): StreamParser {
-        val streamer = StreamParser(parser)
-        val charsetName = if (charset != null) charset.name() else null
-        try {
-            val charsetDoc = detectCharset(openStream(path), charsetName, baseUri, parser)
-            val reader: Reader = SimpleStreamReader(charsetDoc.input, charsetDoc.charset)
-            streamer.parse(
-                reader,
-                baseUri
-            ) // initializes the parse and the document, but does not step() it
-        } catch (e: IOException) {
-            streamer.close()
-            throw e
-        }
-        return streamer
-    }
-
     /** Open an input stream from a file; if it's a gzip file, returns a GZIPInputStream to unzip it.  */
     @Throws(IOException::class)
     private fun openStream(path: Path): ControllableInputStream {
@@ -181,7 +141,7 @@ object DataUtil {
      * @throws IOException on IO error
      */
     @Throws(IOException::class)
-    fun load(inStream: InputStream?, charsetName: String, baseUri: String): Document {
+    fun load(inStream: InputStream, charsetName: String?, baseUri: String): Document {
         return parseInputStream(
             ControllableInputStream.wrap(inStream, 0),
             charsetName,
@@ -212,21 +172,6 @@ object DataUtil {
             baseUri,
             parser
         )
-    }
-
-    /**
-     * Writes the input stream to the output stream. Doesn't close them.
-     * @param `in` input stream to read from
-     * @param out output stream to write to
-     * @throws IOException on IO error
-     */
-    @Throws(IOException::class)
-    fun crossStreams(inStream: InputStream, out: OutputStream) {
-        val buffer = ByteArray(SharedConstants.DefaultBufferSize)
-        var len: Int
-        while ((inStream.read(buffer).also { len = it }) != -1) {
-            out.write(buffer, 0, len)
-        }
     }
 
     @Throws(IOException::class)
@@ -303,8 +248,7 @@ object DataUtil {
                 var decl: XmlDeclaration? = null
                 if (first is XmlDeclaration) decl = first
                 else if (first is Comment) {
-                    val comment = first
-                    if (comment.isXmlDeclaration()) decl = comment.asXmlDeclaration()
+                    if (first.isXmlDeclaration) decl = first.asXmlDeclaration()
                 }
                 if (decl != null && decl.name().equals("xml", ignoreCase = true)) {
                     foundCharset = decl.attr("encoding")

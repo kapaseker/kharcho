@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.DataUtil
 import io.kapaseker.kharcho.internal.SharedConstants
 import io.kapaseker.kharcho.nodes.Document
@@ -15,7 +14,7 @@ import java.nio.file.Path
 /**
  * The core public access point to the jsoup functionality.
  *
- * @author Jonathan Hedley
+ * @author PG.Xie
  */
 object Kharcho {
     /**
@@ -86,7 +85,7 @@ object Kharcho {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun parse(file: File, charsetName: @Nullable String, baseUri: String): Document {
+    fun parse(file: File, charsetName: String?, baseUri: String): Document {
         return DataUtil.load(file, charsetName, baseUri)
     }
 
@@ -102,8 +101,8 @@ object Kharcho {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun parse(file: File, charsetName: @Nullable String): Document {
-        return DataUtil.load(file, charsetName, file.getAbsolutePath())
+    fun parse(file: File, charsetName: String?): Document {
+        return DataUtil.load(file, charsetName, file.absolutePath)
     }
 
     /**
@@ -123,7 +122,7 @@ object Kharcho {
     @JvmStatic
     @Throws(IOException::class)
     fun parse(file: File): Document {
-        return DataUtil.load(file, null, file.getAbsolutePath())
+        return DataUtil.load(file, null, file.absolutePath)
     }
 
     /**
@@ -142,7 +141,7 @@ object Kharcho {
     @Throws(IOException::class)
     fun parse(
         file: File,
-        charsetName: @Nullable String,
+        charsetName: String?,
         baseUri: String,
         parser: Parser
     ): Document {
@@ -162,7 +161,7 @@ object Kharcho {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun parse(path: Path, charsetName: @Nullable String, baseUri: String): Document {
+    fun parse(path: Path, charsetName: String?, baseUri: String): Document {
         return DataUtil.load(path, charsetName, baseUri)
     }
 
@@ -179,7 +178,7 @@ object Kharcho {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun parse(path: Path, charsetName: @Nullable String): Document {
+    fun parse(path: Path, charsetName: String?): Document {
         return DataUtil.load(path, charsetName, path.toAbsolutePath().toString())
     }
 
@@ -219,7 +218,7 @@ object Kharcho {
     @Throws(IOException::class)
     fun parse(
         path: Path,
-        charsetName: @Nullable String,
+        charsetName: String?,
         baseUri: String,
         parser: Parser
     ): Document {
@@ -229,7 +228,7 @@ object Kharcho {
     /**
      * Read an input stream, and parse it to a Document.
      *
-     * @param in          input stream to read. The stream will be closed after reading.
+     * @param inStream          input stream to read. The stream will be closed after reading.
      * @param charsetName (optional) character set of file contents. Set to `null` to determine from `http-equiv` meta tag, if
      * present, or fall back to `UTF-8` (which is often safe to do).
      * @param baseUri     The URL where the HTML was retrieved from, to resolve relative links against.
@@ -238,15 +237,15 @@ object Kharcho {
      */
     @JvmStatic
     @Throws(IOException::class)
-    fun parse(`in`: InputStream, charsetName: @Nullable String, baseUri: String): Document {
-        return DataUtil.load(`in`, charsetName, baseUri)
+    fun parse(inStream: InputStream, charsetName: String?, baseUri: String): Document {
+        return DataUtil.load(inStream, charsetName, baseUri)
     }
 
     /**
      * Read an input stream, and parse it to a Document. You can provide an alternate parser, such as a simple XML
      * (non-HTML) parser.
      *
-     * @param in          input stream to read. Make sure to close it after parsing.
+     * @param inStream          input stream to read. Make sure to close it after parsing.
      * @param charsetName (optional) character set of file contents. Set to `null` to determine from `http-equiv` meta tag, if
      * present, or fall back to `UTF-8` (which is often safe to do).
      * @param baseUri     The URL where the HTML was retrieved from, to resolve relative links against.
@@ -257,12 +256,12 @@ object Kharcho {
     @JvmStatic
     @Throws(IOException::class)
     fun parse(
-        `in`: InputStream,
-        charsetName: @Nullable String,
+        inStream: InputStream,
+        charsetName: String?,
         baseUri: String,
         parser: Parser
     ): Document {
-        return DataUtil.load(`in`, charsetName, baseUri, parser)
+        return DataUtil.load(inStream, charsetName, baseUri, parser)
     }
 
     /**

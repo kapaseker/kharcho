@@ -11,6 +11,9 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.stream.Stream
 
+val EmptyNodes: MutableList<Node> = mutableListOf<Node>()
+const val EmptyString: String = ""
+
 /**
  * The base, abstract Node model. [Element], [Document], [Comment], [TextNode], et al.,
  * are instances of Node.
@@ -31,7 +34,7 @@ protected constructor() : Cloneable {
      * Get the node name of this node. Use for debugging purposes and not logic switching (for that, use instanceof).
      * @return node name
      */
-    abstract fun nodeName(): String?
+    abstract fun nodeName(): String
 
     /**
      * Get the normalized name of this node. For node types other than Element, this is the same as [.nodeName].
@@ -39,7 +42,7 @@ protected constructor() : Cloneable {
      * @return normalized node name
      * @since 1.15.4.
      */
-    open fun normalName(): String? {
+    open fun normalName(): String {
         return nodeName()
     }
 
@@ -48,7 +51,7 @@ protected constructor() : Cloneable {
      * wholeOwnText. Returns "" if there is no value.
      * @return the node's value
      */
-    open fun nodeValue(): String? {
+    open fun nodeValue(): String {
         return ""
     }
 
@@ -58,7 +61,7 @@ protected constructor() : Cloneable {
      * @return true if the element's normal name matches exactly
      * @since 1.17.2
      */
-    fun nameIs(normalName: String?): Boolean {
+    fun nameIs(normalName: String): Boolean {
         return normalName() == normalName
     }
 
@@ -68,8 +71,8 @@ protected constructor() : Cloneable {
      * @return true if the parent element's normal name matches exactly
      * @since 1.17.2
      */
-    fun parentNameIs(normalName: String?): Boolean {
-        return parentNode != null && parentNode!!.normalName() == normalName
+    fun parentNameIs(normalName: String): Boolean {
+        return parentNode?.normalName() == normalName
     }
 
     /**
@@ -79,7 +82,7 @@ protected constructor() : Cloneable {
      * @return true if the parent element's normal name matches exactly, and that element is in the specified namespace
      * @since 1.17.2
      */
-    fun parentElementIs(normalName: String?, namespace: String?): Boolean {
+    fun parentElementIs(normalName: String, namespace: String): Boolean {
         return parentNode != null && parentNode is Element
                 && (parentNode as Element).elementIs(normalName, namespace)
     }
@@ -114,12 +117,12 @@ protected constructor() : Cloneable {
      * @see .hasAttr
      * @see .absUrl
      */
-    open fun attr(attributeKey: String): String? {
+    open fun attr(attributeKey: String): String {
         Validate.notNull(attributeKey)
         if (!hasAttributes()) return EmptyString
 
-        val `val` = attributes()!!.getIgnoreCase(attributeKey)
-        if (`val`!!.length > 0) return `val`
+        val attr = attributes().getIgnoreCase(attributeKey)
+        if (attr.length > 0) return attr
         else if (attributeKey.startsWith("abs:")) return absUrl(attributeKey.substring("abs:".length))
         else return ""
     }
@@ -128,7 +131,7 @@ protected constructor() : Cloneable {
      * Get each of the Element's attributes.
      * @return attributes (which implements Iterable, with the same order as presented in the original HTML).
      */
-    abstract fun attributes(): Attributes?
+    abstract fun attributes(): Attributes
 
     /**
      * Get the number of attributes that this Node has.
@@ -205,13 +208,13 @@ protected constructor() : Cloneable {
      * @return base URI
      * @see .absUrl
      */
-    abstract fun baseUri(): String?
+    abstract fun baseUri(): String
 
     /**
      * Set the baseUri for just this node (not its descendants), if this Node tracks base URIs.
      * @param baseUri new URI
      */
-    protected abstract fun doSetBaseUri(baseUri: String?)
+    protected abstract fun doSetBaseUri(baseUri: String)
 
     /**
      * Update the base URI of this node and all of its descendants.
@@ -249,9 +252,9 @@ protected constructor() : Cloneable {
      *
      * @see java.net.URL.URL
      */
-    open fun absUrl(attributeKey: String): String? {
+    open fun absUrl(attributeKey: String): String {
         Validate.notEmpty(attributeKey)
-        if (!(hasAttributes() && attributes()!!.hasKeyIgnoreCase(attributeKey)))  // not using hasAttr, so that we don't recurse down hasAttr->absUrl
+        if (!(hasAttributes() && attributes().hasKeyIgnoreCase(attributeKey)))  // not using hasAttr, so that we don't recurse down hasAttr->absUrl
             return ""
 
         return StringUtil.resolve(baseUri()!!, attributes()!!.getIgnoreCase(attributeKey)!!)
@@ -274,14 +277,14 @@ protected constructor() : Cloneable {
      * themselves can be manipulated.
      * @return list of children. If no children, returns an empty list.
      */
-    fun childNodes(): MutableList<Node?> {
+    fun childNodes(): List<Node> {
         if (childNodeSize() == 0) return EmptyNodes
 
         val children = ensureChildNodes()
         val rewrap: MutableList<Node?> =
             ArrayList<Node?>(children.size) // wrapped so that looping and moving will not throw a CME as the source changes
         rewrap.addAll(children)
-        return Collections.unmodifiableList<Node?>(rewrap)
+        return Collections.unmodifiableList<Node>(rewrap)
     }
 
     /**
@@ -370,7 +373,7 @@ protected constructor() : Cloneable {
      * an orphan, nothing happens.
      */
     fun remove() {
-        if (parentNode != null) parentNode.removeChild(this)
+        parentNode?.removeChild(this)
     }
 
     /**
@@ -397,7 +400,7 @@ protected constructor() : Cloneable {
         // if the incoming node is a sibling of this, remove it first so siblingIndex is correct on add
         if (node.parentNode === parentNode) node.remove()
 
-        parentNode.addChildren(siblingIndex(), node)
+        parentNode?.addChildren(siblingIndex(), node)
         return this
     }
 
@@ -425,7 +428,7 @@ protected constructor() : Cloneable {
         // if the incoming node is a sibling of this, remove it first so siblingIndex is correct on add
         if (node.parentNode === parentNode) node.remove()
 
-        parentNode.addChildren(siblingIndex() + 1, node)
+        parentNode?.addChildren(siblingIndex() + 1, node)
         return this
     }
 
@@ -434,9 +437,8 @@ protected constructor() : Cloneable {
         Validate.notNull(parentNode!!)
 
         val context = if (parentNode is Element) parentNode as Element else null
-        val nodes: MutableList<Node>? =
-            NodeUtils.parser(this).parseFragmentInput(html, context, baseUri())
-        parentNode.addChildren(index, *nodes!!.toTypedArray<Node?>())
+        val nodes: List<Node> = NodeUtils.parser(this).parseFragmentInput(html, context, baseUri())
+        parentNode?.addChildren(index, *nodes.toTypedArray<Node>())
     }
 
     /**
@@ -451,27 +453,26 @@ protected constructor() : Cloneable {
 
         // Parse context - parent (because wrapping), this, or null
         val context =
-            if (parentNode != null && parentNode is Element) parentNode as Element else if (this is Element) this else null
-        val wrapChildren: MutableList<Node>? =
+            if (parentNode != null && parentNode is Element) parentNode as Element else this as? Element
+        val wrapChildren: List<Node> =
             NodeUtils.parser(this).parseFragmentInput(html, context, baseUri())
-        val wrapNode: Node? = wrapChildren!!.get(0)
+        val wrapNode: Node = wrapChildren[0]
         if (wrapNode !is Element)  // nothing to wrap with; noop
             return this
 
-        val wrap = wrapNode
-        val deepest: Element = getDeepChild(wrap)
-        if (parentNode != null) parentNode.replaceChild(this, wrap)
+        val deepest: Element = getDeepChild(wrapNode)
+        parentNode?.replaceChild(this, wrapNode)
         deepest.addChildren(this) // side effect of tricking wrapChildren to lose first
 
         // remainder (unbalanced wrap, like <div></div><p></p> -- The <p> is remainder
-        if (wrapChildren.size > 0) {
+        if (wrapChildren.isNotEmpty()) {
             for (i in wrapChildren.indices) {
-                val remainder = wrapChildren.get(i)
+                val remainder = wrapChildren[i]
                 // if no parent, this could be the wrap node, so skip
-                if (wrap === remainder) continue
+                if (wrapNode === remainder) continue
 
-                if (remainder.parentNode != null) remainder.parentNode.removeChild(remainder)
-                wrap.after(remainder)
+                remainder.parentNode?.removeChild(remainder)
+                wrapNode.after(remainder)
             }
         }
         return this
@@ -496,9 +497,8 @@ protected constructor() : Cloneable {
      * @see .wrap
      */
     fun unwrap(): Node? {
-        Validate.notNull(parentNode!!)
         val firstChild = firstChild()
-        parentNode.addChildren(siblingIndex(), *this.childNodesAsArray())
+        parentNode?.addChildren(siblingIndex(), *this.childNodesAsArray())
         this.remove()
 
         return firstChild
@@ -506,36 +506,35 @@ protected constructor() : Cloneable {
 
     /**
      * Replace this node in the DOM with the supplied node.
-     * @param in the node that will replace the existing node.
+     * @param `in` the node that will replace the existing node.
      */
-    fun replaceWith(`in`: Node) {
-        Validate.notNull(`in`)
+    fun replaceWith(inNode: Node) {
+        Validate.notNull(inNode)
         if (parentNode == null) parentNode =
-            `in`.parentNode // allows old to have been temp removed before replacing
+            inNode.parentNode // allows old to have been temp removed before replacing
 
-        Validate.notNull(parentNode!!)
-        parentNode.replaceChild(this, `in`)
+        parentNode?.replaceChild(this, inNode)
     }
 
     protected fun setParentNode(parentNode: Node) {
         Validate.notNull(parentNode)
-        if (this.parentNode != null) this.parentNode.removeChild(this)
+        this.parentNode?.removeChild(this)
         assert(parentNode is Element)
         this.parentNode = parentNode as Element
     }
 
-    protected fun replaceChild(out: Node, `in`: Node) {
+    protected fun replaceChild(out: Node, inNode: Node) {
         Validate.isTrue(out.parentNode === this)
-        Validate.notNull(`in`)
-        if (out === `in`) return  // no-op self replacement
+        Validate.notNull(inNode)
+        if (out === inNode) return  // no-op self replacement
 
 
-        if (`in`.parentNode != null) `in`.parentNode.removeChild(`in`)
+        inNode.parentNode?.removeChild(inNode)
 
         val index = out.siblingIndex()
-        ensureChildNodes().set(index, `in`)
-        `in`.parentNode = this as Element
-        `in`.setSiblingIndex(index)
+        ensureChildNodes()[index] = inNode
+        inNode.parentNode = this as Element
+        inNode.setSiblingIndex(index)
         out.parentNode = null
 
         this.childNodes.incrementMod() // as mod count not changed in set(), requires explicit update, to invalidate the child element cache
@@ -564,10 +563,10 @@ protected constructor() : Cloneable {
         }
     }
 
-    protected fun addChildren(index: Int, vararg children: Node) {
+    fun addChildren(index: Int, vararg children: Node) {
         // todo clean up all these and use the list, not the var array. just need to be careful when iterating the incoming (as we are removing as we go)
         Validate.notNull(children)
-        if (children.size == 0) return
+        if (children.isEmpty()) return
         val nodes = ensureChildNodes()
 
         // fast path - if used as a wrap (index=0, children = child[0].parent.children - do inplace
@@ -585,7 +584,7 @@ protected constructor() : Cloneable {
             }
             if (sameList) { // moving, so OK to empty firstParent and short-circuit
                 firstParent.empty()
-                nodes.addAll(index, Arrays.asList<Node?>(*children))
+                nodes.addAll(index, listOf(*children))
                 i = children.size
                 assert(this is Element)
                 while (i-- > 0) {
@@ -600,7 +599,7 @@ protected constructor() : Cloneable {
         for (child in children) {
             reparentChild(child)
         }
-        nodes.addAll(index, Arrays.asList<Node?>(*children))
+        nodes.addAll(index, listOf(*children))
         (this as Element).invalidateChildren()
     }
 
@@ -790,8 +789,8 @@ protected constructor() : Cloneable {
      * @see Element.stream
      * @since 1.17.1
      */
-    fun nodeStream(): Stream<Node?> {
-        return NodeUtils.stream<Node?>(this, Node::class.java)
+    fun nodeStream(): Stream<Node> {
+        return NodeUtils.stream<Node>(this)
     }
 
     /**
@@ -801,8 +800,8 @@ protected constructor() : Cloneable {
      * @see Element.stream
      * @since 1.17.1
      */
-    fun <T : Node?> nodeStream(type: Class<T?>?): Stream<T?> {
-        return NodeUtils.stream<T?>(this, type)
+    fun <T : Node> nodeStream(): Stream<T> {
+        return NodeUtils.stream<T>(this)
     }
 
     /**
@@ -811,7 +810,7 @@ protected constructor() : Cloneable {
      * @see Element.html
      * @see Element.text
      */
-    open fun outerHtml(): String? {
+    open fun outerHtml(): String {
         val sb = StringUtil.borrowBuilder()
         outerHtml(QuietAppendable.wrap(sb))
         return StringUtil.releaseBuilder(sb)
@@ -832,9 +831,9 @@ protected constructor() : Cloneable {
      * @param accum accumulator to place HTML into
      * @param out
      */
-    abstract fun outerHtmlHead(accum: QuietAppendable?, out: Document.OutputSettings?)
+    abstract fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings)
 
-    abstract fun outerHtmlTail(accum: QuietAppendable?, out: Document.OutputSettings?)
+    abstract fun outerHtmlTail(accum: QuietAppendable, out: Document.OutputSettings)
 
     /**
      * Write this node and its children to the given [Appendable].
@@ -843,7 +842,7 @@ protected constructor() : Cloneable {
      * @return the supplied [Appendable], for chaining.
      * @throws io.kapaseker.kharcho.SerializationException if the appendable throws an IOException.
      */
-    open fun <T : Appendable?> html(appendable: T?): T? {
+    open fun <T : Appendable> html(appendable: T): T {
         outerHtml(appendable)
         return appendable
     }
@@ -932,7 +931,7 @@ protected constructor() : Cloneable {
      * @return a stand-alone cloned node, including clones of any children
      * @see .shallowClone
      */
-    public override fun clone(): Node? {
+    public override fun clone(): Node {
         val thisClone = doClone(null) // splits for orphan
 
         // Queue up nodes that need their children cloned (BFS).
@@ -994,9 +993,6 @@ protected constructor() : Cloneable {
     }
 
     companion object {
-        @JvmField
-        val EmptyNodes: MutableList<Node?> = mutableListOf<Node?>()
-        const val EmptyString: String = ""
         private fun getDeepChild(el: Element): Element {
             var el = el
             var child = el.firstElementChild()

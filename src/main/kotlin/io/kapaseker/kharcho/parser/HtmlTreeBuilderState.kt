@@ -1817,7 +1817,7 @@ internal enum class HtmlTreeBuilderState {
                 Token.TokenType.Doctype -> tb.error(this)
                 Token.TokenType.StartTag -> {
                     val start = t.asStartTag()
-                    if (StringUtil.`in`(
+                    if (StringUtil.checkIn(
                             start.normalName,
                             *Constants.InForeignToHtml
                         )

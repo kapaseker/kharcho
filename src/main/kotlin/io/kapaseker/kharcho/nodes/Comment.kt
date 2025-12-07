@@ -35,8 +35,8 @@ class Comment(data: String) : LeafNode(data) {
         accum.append("<!--").append(this.data).append("-->")
     }
 
-    override fun clone(): Comment? {
-        return super.clone() as Comment?
+    override fun clone(): Comment {
+        return super.clone() as Comment
     }
 
     val isXmlDeclaration: Boolean

@@ -21,15 +21,15 @@ internal object NodeUtils {
      */
     fun outputSettings(node: Node): Document.OutputSettings {
         val owner = node.ownerDocument()
-        return if (owner != null) owner.outputSettings() else (Document("")).outputSettings()
+        return owner?.outputSettings() ?: (Document("")).outputSettings()
     }
 
     /**
      * Get the parser that was used to make this node, or the default HTML parser if it has no parent.
      */
-    fun parser(node: Node): Parser? {
+    fun parser(node: Node): Parser {
         val doc = node.ownerDocument()
-        return if (doc != null) doc.parser() else Parser(HtmlTreeBuilder())
+        return doc?.parser() ?: Parser(HtmlTreeBuilder())
     }
 
     /**
@@ -55,18 +55,17 @@ internal object NodeUtils {
     }
 
     /** Creates a Stream, starting with the supplied node.  */
-    fun <T : io.kapaseker.kharcho.nodes.Node?> stream(
-        start: io.kapaseker.kharcho.nodes.Node?,
-        type: Class<T?>?
-    ): Stream<T?> {
-        val iterator = NodeIterator<T?>(start, type)
-        val spliterator = spliterator<T?>(iterator)
+    fun <T : Node> stream(
+        start: Node,
+    ): Stream<T> {
+        val iterator = NodeIterator<T>(start)
+        val spliterator = spliterator(iterator)
 
-        return StreamSupport.stream<T?>(spliterator, false)
+        return StreamSupport.stream<T>(spliterator, false)
     }
 
-    fun <T : io.kapaseker.kharcho.nodes.Node?> spliterator(iterator: MutableIterator<T?>): Spliterator<T?> {
-        return Spliterators.spliteratorUnknownSize<T?>(
+    fun <T : Node> spliterator(iterator: MutableIterator<T?>): Spliterator<T?> {
+        return Spliterators.spliteratorUnknownSize<T>(
             iterator,
             Spliterator.DISTINCT or Spliterator.NONNULL or Spliterator.ORDERED
         )

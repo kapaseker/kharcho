@@ -94,7 +94,7 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @param key the attribute name
      * @return the first matching attribute value if set; or empty string if not set (ora boolean attribute).
      */
-    fun getIgnoreCase(key: String): String? {
+    fun getIgnoreCase(key: String): String {
         val i = indexOfKeyIgnoreCase(key)
         return if (i == NotFound) EmptyString else checkNotNull(vals[i])
     }
@@ -103,12 +103,12 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * Adds a new attribute. Will produce duplicates if the key already exists.
      * @see Attributes.put
      */
-    fun add(key: String?, @Nullable value: String?): Attributes {
+    fun add(key: String, value: String?): Attributes {
         addObject(key, value)
         return this
     }
 
-    private fun addObject(key: String?, @Nullable value: Any?) {
+    private fun addObject(key: String, value: Any?) {
         checkCapacity(size + 1)
         keys[size] = key!!
         vals[size] = value
@@ -121,7 +121,7 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @param value attribute value (which can be null, to set a true boolean attribute)
      * @return these attributes, for chaining
      */
-    fun put(key: String, @Nullable value: String?): Attributes {
+    fun put(key: String, value: String?): Attributes {
         Validate.notNull(key)
         val i = indexOfKey(key)
         if (i != NotFound) vals[i] = value

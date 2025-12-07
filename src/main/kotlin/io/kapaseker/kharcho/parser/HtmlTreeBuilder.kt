@@ -476,7 +476,7 @@ class HtmlTreeBuilder : TreeBuilder() {
         for (pos in stack!!.indices.reversed()) {
             val next = stack.get(pos)
             if (Parser.Companion.NamespaceHtml == next.tag().namespace() &&
-                (StringUtil.`in`(next.normalName(), *nodeNames) || next.nameIs("html"))
+                (StringUtil.checkIn(next.normalName(), *nodeNames) || next.nameIs("html"))
             ) break
             else pop()
         }
@@ -1126,7 +1126,7 @@ class HtmlTreeBuilder : TreeBuilder() {
             }
             // note using .tagName for case-sensitive hit here of foreignObject
             return Parser.Companion.NamespaceSvg == el.tag()
-                .namespace() && StringUtil.`in`(el.tagName(), *TagSvgHtmlIntegration)
+                .namespace() && StringUtil.checkIn(el.tagName(), *TagSvgHtmlIntegration)
         }
 
         private const val maxQueueDepth =

@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.internal
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import java.net.MalformedURLException
 import java.net.URL
@@ -115,7 +114,7 @@ object StringUtil {
      * @return if string is blank
      */
     @JvmStatic
-    fun isBlank(@Nullable string: String?): Boolean {
+    fun isBlank(string: String?): Boolean {
         if (string == null || string.isEmpty()) return true
 
         val l = string.length
@@ -158,7 +157,7 @@ object StringUtil {
      */
     @JvmStatic
     fun isWhitespace(c: Int): Boolean {
-        return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\f'.code || c == '\r'.code
+        return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\u000c'.code || c == '\r'.code
     }
 
     /**
@@ -167,7 +166,7 @@ object StringUtil {
      * @return true if code point is whitespace, false otherwise
      */
     fun isActuallyWhitespace(c: Int): Boolean {
-        return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\f'.code || c == '\r'.code || c == 160
+        return c == ' '.code || c == '\t'.code || c == '\n'.code || c == '\u000c'.code || c == '\r'.code || c == 160
         // 160 is &nbsp; (non-breaking space). Not in the spec but expected.
     }
 
@@ -222,7 +221,7 @@ object StringUtil {
     }
 
     @JvmStatic
-    fun `in`(needle: String?, vararg haystack: String?): Boolean {
+    fun checkIn(needle: String, vararg haystack: String): Boolean {
         val len = haystack.size
         for (i in 0..<len) {
             if (haystack[i] == needle) return true
@@ -281,7 +280,7 @@ object StringUtil {
      * @return an absolute URL if one was able to be generated, or the empty string if not
      */
     @JvmStatic
-    fun resolve(baseUrl: String, relUrl: String): String? {
+    fun resolve(baseUrl: String, relUrl: String): String {
         // workaround: java will allow control chars in a path URL and may treat as relative, but Chrome / Firefox will strip and may see as a scheme. Normalize to browser's view.
         var baseUrl = baseUrl
         var relUrl = relUrl

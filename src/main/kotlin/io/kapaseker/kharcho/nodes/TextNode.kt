@@ -6,18 +6,13 @@ import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.internal.StringUtil.isBlank
 
 /**
- * A text node.
- *
- * @author Jonathan Hedley, jonathan@hedley.net
- */
-open class TextNode
-/**
  * Create a new TextNode representing the supplied (unencoded) text).
  *
  * @param text raw text
  * @see .createFromEncoded
  */
-    (text: String?) : LeafNode(text) {
+open class TextNode
+    (text: String) : LeafNode(text) {
     override fun nodeName(): String {
         return "#text"
     }
@@ -27,7 +22,7 @@ open class TextNode
      * @return Unencoded, normalised text.
      * @see TextNode.getWholeText
      */
-    open fun text(): String? {
+    open fun text(): String {
         return StringUtil.normaliseWhitespace(this.wholeText)
     }
 
@@ -70,12 +65,12 @@ open class TextNode
         val tail = text.substring(offset)
         text(head)
         val tailNode = TextNode(tail)
-        if (parentNode != null) parentNode.addChildren(siblingIndex() + 1, tailNode)
+        parentNode?.addChildren(siblingIndex() + 1, tailNode)
 
         return tailNode
     }
 
-    override fun outerHtmlHead(accum: QuietAppendable?, out: Document.OutputSettings) {
+    override fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings) {
         Entities.escape(accum, coreValue(), out, Entities.ForText)
     }
 
@@ -83,8 +78,8 @@ open class TextNode
         return outerHtml()
     }
 
-    override fun clone(): TextNode? {
-        return super.clone() as TextNode?
+    override fun clone(): TextNode {
+        return super.clone() as TextNode
     }
 
     companion object {
@@ -93,7 +88,7 @@ open class TextNode
          * @param encodedText Text containing encoded HTML (e.g. `&lt;`)
          * @return TextNode containing unencoded data (e.g. `<`)
          */
-        fun createFromEncoded(encodedText: String?): TextNode {
+        fun createFromEncoded(encodedText: String): TextNode {
             val text = Entities.unescape(encodedText)
             return TextNode(text)
         }
@@ -110,7 +105,7 @@ open class TextNode
 
         @JvmStatic
         fun lastCharIsWhitespace(sb: StringBuilder): Boolean {
-            return sb.length != 0 && sb.get(sb.length - 1) == ' '
+            return sb.isNotEmpty() && sb[sb.length - 1] == ' '
         }
     }
 }

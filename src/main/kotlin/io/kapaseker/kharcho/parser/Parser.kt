@@ -91,7 +91,7 @@ class Parser : Cloneable {
      * @param baseUri base URI of document (i.e. original fetch location), for resolving relative URLs.
      * @return parsed Document
      */
-    fun parseInput(html: String, baseUri: String?): Document? {
+    fun parseInput(html: String, baseUri: String): Document {
         return parseInput(StringReader(html), baseUri)
     }
 
@@ -124,7 +124,7 @@ class Parser : Cloneable {
         fragment: String,
         context: Element?,
         baseUri: String
-    ): MutableList<Node?>? {
+    ): List<Node> {
         return parseFragmentInput(StringReader(fragment), context, baseUri)
     }
 
@@ -141,7 +141,7 @@ class Parser : Cloneable {
         fragment: Reader,
         context: Element?,
         baseUri: String
-    ): MutableList<Node?>? {
+    ): List<Node> {
         try {
             lock.lock()
             return treeBuilder.parseFragment(fragment, context, baseUri, this)
@@ -277,7 +277,7 @@ class Parser : Cloneable {
          *
          * @return parsed Document
          */
-        fun parse(html: String, baseUri: String?): Document? {
+        fun parse(html: String, baseUri: String): Document {
             val treeBuilder: TreeBuilder = HtmlTreeBuilder()
             return treeBuilder.parse(StringReader(html), baseUri, Parser(treeBuilder))
         }

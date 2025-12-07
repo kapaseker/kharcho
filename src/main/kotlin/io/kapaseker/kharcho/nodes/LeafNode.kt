@@ -22,9 +22,9 @@ abstract class LeafNode : Node {
         return value is Attributes
     }
 
-    public override fun attributes(): Attributes? {
+    public override fun attributes(): Attributes {
         ensureAttributes()
-        return value as Attributes?
+        return value as Attributes
     }
 
     private fun ensureAttributes() {
@@ -36,25 +36,25 @@ abstract class LeafNode : Node {
         }
     }
 
-    fun coreValue(): String? {
-        return attr(nodeName()!!)
+    fun coreValue(): String {
+        return attr(nodeName())
     }
 
     override fun parent(): Element? {
         return parentNode
     }
 
-    override fun nodeValue(): String? {
+    override fun nodeValue(): String {
         return coreValue()
     }
 
     fun coreValue(value: String?) {
-        attr(nodeName()!!, value)
+        attr(nodeName(), value)
     }
 
-    override fun attr(key: String): String? {
+    override fun attr(key: String): String {
         if (!hasAttributes()) {
-            return if (nodeName() == key) value as String? else EmptyString
+            return if (nodeName() == key) value as String else EmptyString
         }
         return super.attr(key)
     }
@@ -79,16 +79,16 @@ abstract class LeafNode : Node {
         return super.removeAttr(key)
     }
 
-    public override fun absUrl(key: String): String? {
+    public override fun absUrl(key: String): String {
         ensureAttributes()
         return super.absUrl(key)
     }
 
-    public override fun baseUri(): String? {
-        return if (parentNode != null) parentNode!!.baseUri() else ""
+    public override fun baseUri(): String {
+        return parentNode?.baseUri() ?: EmptyString
     }
 
-    override fun doSetBaseUri(baseUri: String?) {
+    override fun doSetBaseUri(baseUri: String) {
         // noop
     }
 
@@ -100,11 +100,13 @@ abstract class LeafNode : Node {
         return this
     }
 
-    override fun ensureChildNodes(): MutableList<Node?> {
+    override fun ensureChildNodes(): MutableList<Node> {
         return EmptyNodes
     }
 
-    override fun outerHtmlTail(accum: QuietAppendable?, out: Document.OutputSettings?) {}
+    override fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings) {}
+
+    override fun outerHtmlTail(accum: QuietAppendable, out: Document.OutputSettings) {}
 
     override fun doClone(parent: Node?): LeafNode {
         val clone = super.doClone(parent) as LeafNode

@@ -1,7 +1,5 @@
 package io.kapaseker.kharcho.helper
 
-import io.kapaseker.kharcho.annotations.Nullable
-
 /**
  * Validators to check that method arguments meet expectations.
  */
@@ -12,7 +10,7 @@ object Validate {
      * @throws ValidationException if the object is null
      */
     @JvmStatic
-    fun notNull(@Nullable obj: Any) {
+    fun notNull(obj: Any?) {
         if (obj == null) throw ValidationException("Object must not be null")
     }
 
@@ -24,7 +22,7 @@ object Validate {
      * @throws ValidationException if the object is null
      */
     @JvmStatic
-    fun notNullParam(@Nullable obj: Any, param: String?) {
+    fun notNullParam(obj: Any?, param: String?) {
         if (obj == null) throw ValidationException(
             String.format(
                 "The parameter '%s' must not be null.",
@@ -40,7 +38,7 @@ object Validate {
      * @throws ValidationException if the object is null
      */
     @JvmStatic
-    fun notNull(@Nullable obj: Any, msg: String?) {
+    fun notNull(obj: Any?, msg: String?) {
         if (obj == null) throw ValidationException(msg)
     }
 
@@ -52,7 +50,7 @@ object Validate {
      * @throws ValidationException if the object is null
      */
     @Deprecated("prefer to use {@link #expectNotNull(Object, String, Object...)} instead")
-    fun ensureNotNull(@Nullable obj: Any): Any {
+    fun ensureNotNull(obj: Any?): Any {
         if (obj == null) throw ValidationException("Object must not be null")
         else return obj
     }
@@ -67,7 +65,7 @@ object Validate {
      * @throws ValidationException if the object is null
      */
     @Deprecated("prefer to use {@link #expectNotNull(Object, String, Object...)} instead")
-    fun ensureNotNull(@Nullable obj: Any, msg: String, vararg args: Any?): Any {
+    fun ensureNotNull(obj: Any?, msg: String, vararg args: Any?): Any {
         if (obj == null) throw ValidationException(String.format(msg, *args))
         else return obj
     }
@@ -80,7 +78,7 @@ object Validate {
      * @return the object, or throws an exception if it is null
      * @throws ValidationException if the object is null
      */
-    fun <T> expectNotNull(@Nullable obj: T?): T? {
+    fun <T> expectNotNull(obj: T?): T {
         if (obj == null) throw ValidationException("Object must not be null")
         else return obj
     }
@@ -95,7 +93,7 @@ object Validate {
      * @return the object, or throws an exception if it is null
      * @throws ValidationException if the object is null
      */
-    fun <T> expectNotNull(@Nullable obj: T?, msg: String, vararg args: Any?): T? {
+    fun <T> expectNotNull(obj: T?, msg: String, vararg args: Any?): T {
         if (obj == null) throw ValidationException(String.format(msg, *args))
         else return obj
     }
@@ -155,7 +153,7 @@ object Validate {
      */
     @JvmOverloads
     fun noNullElements(
-        objects: Array<Any>,
+        objects: Array<out Any>,
         msg: String? = "Array must not contain any null objects"
     ) {
         for (obj in objects) if (obj == null) throw ValidationException(msg)
@@ -167,8 +165,8 @@ object Validate {
      * @throws ValidationException if the string is null or empty
      */
     @JvmStatic
-    fun notEmpty(@Nullable string: String) {
-        if (string == null || string.length == 0) throw ValidationException("String must not be empty")
+    fun notEmpty(string: String?) {
+        if (string == null || string.isEmpty()) throw ValidationException("String must not be empty")
     }
 
     /**
@@ -178,8 +176,8 @@ object Validate {
      * @throws ValidationException if the string is null or empty
      */
     @JvmStatic
-    fun notEmptyParam(@Nullable string: String, param: String?) {
-        if (string == null || string.length == 0) throw ValidationException(
+    fun notEmptyParam(string: String?, param: String?) {
+        if (string == null || string.isEmpty()) throw ValidationException(
             String.format(
                 "The '%s' parameter must not be empty.",
                 param
@@ -193,8 +191,8 @@ object Validate {
      * @param msg message to include in the Exception if validation fails
      * @throws ValidationException if the string is null or empty
      */
-    fun notEmpty(@Nullable string: String, msg: String?) {
-        if (string == null || string.length == 0) throw ValidationException(msg)
+    fun notEmpty(string: String?, msg: String?) {
+        if (string == null || string.isEmpty()) throw ValidationException(msg)
     }
 
     /**

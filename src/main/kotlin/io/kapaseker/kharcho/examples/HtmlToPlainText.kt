@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.examples
 
-import io.kapaseker.kharcho.Jsoup
 import io.kapaseker.kharcho.Kharcho
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.Element
@@ -38,7 +37,7 @@ fun main(args: Array<String>) {
  * @param element the root element to format
  * @return formatted text
  */
-fun getPlainText(element: Element?): String {
+fun getPlainText(element: Element): String {
     val formatter = FormattingVisitor()
     formatter.traverse(element) // walk the DOM, and call .head() and .tail() for each node
 
@@ -56,13 +55,13 @@ private class FormattingVisitor : NodeVisitor {
         if (node is TextNode) append(node.text()) // TextNodes carry all user-readable text in the DOM.
         else if (name == "li") append("\n * ")
         else if (name == "dt") append("  ")
-        else if (StringUtil.`in`(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")) append("\n")
+        else if (StringUtil.checkIn(name, "p", "h1", "h2", "h3", "h4", "h5", "tr")) append("\n")
     }
 
     // hit when all of the node's children (if any) have been visited
     override fun tail(node: Node, depth: Int) {
         val name = node.nodeName()
-        if (StringUtil.`in`(
+        if (StringUtil.checkIn(
                 name,
                 "br",
                 "dd",
@@ -84,19 +83,19 @@ private class FormattingVisitor : NodeVisitor {
             0 // reset counter if starts with a newline. only from formats above, not in natural text
 
         if (text == " " &&
-            (accum.length == 0 || StringUtil.`in`(accum.substring(accum.length - 1), " ", "\n"))
+            (accum.isEmpty() || StringUtil.checkIn(accum.substring(accum.length - 1), " ", "\n"))
         ) return  // don't accumulate long runs of empty spaces
 
 
-        if (text.length + width > maxWidth) { // won't fit, needs to wrap
+        if (text.length + width > MAX_WIDTH) { // won't fit, needs to wrap
             val words =
                 text.split("\\s+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (i in words.indices) {
                 var word = words[i]
                 val last = i == words.size - 1
                 if (!last)  // insert a space if not the last word
-                    word = word + " "
-                if (word.length + width > maxWidth) { // wrap and reset counter
+                    word = "$word "
+                if (word.length + width > MAX_WIDTH) { // wrap and reset counter
                     accum.append("\n").append(word)
                     width = word.length
                 } else {
@@ -115,6 +114,6 @@ private class FormattingVisitor : NodeVisitor {
     }
 
     companion object {
-        private const val maxWidth = 80
+        private const val MAX_WIDTH = 80
     }
 }
