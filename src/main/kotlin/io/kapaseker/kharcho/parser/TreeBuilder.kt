@@ -9,15 +9,14 @@ import java.io.Reader
 /**
  * @author Jonathan Hedley
  */
-internal abstract class TreeBuilder {
+abstract class TreeBuilder {
     var parser: Parser? = null
     var reader: CharacterReader? = null
     var tokeniser: Tokeniser? = null
     var doc: Document? = null // current doc we are building into
     var stack: ArrayList<Element>? = null // the stack of open elements
     var baseUri: String? = null // current base uri, for creating new elements
-    var currentToken: Token? =
-        null // currentToken is used for error and source position tracking. Null at start of fragment parse
+    var currentToken: Token? = null // currentToken is used for error and source position tracking. Null at start of fragment parse
     var settings: ParseSettings? = null
     var tagSet: TagSet? = null // the tags we're using in this parse
 
@@ -25,7 +24,7 @@ internal abstract class TreeBuilder {
 
     private var start: Token.StartTag? = null // start tag to process
     private val end = Token.EndTag(this)
-    abstract fun defaultSettings(): ParseSettings?
+    abstract fun defaultSettings(): ParseSettings
 
     var trackSourceRange: Boolean =
         false // optionally tracks the source range of nodes and attributes
@@ -94,7 +93,7 @@ internal abstract class TreeBuilder {
      * Create a new copy of this TreeBuilder
      * @return copy, ready for a new parse
      */
-    abstract fun newInstance(): TreeBuilder?
+    abstract fun newInstance(): TreeBuilder
 
     fun runParser() {
         do {
@@ -273,12 +272,12 @@ internal abstract class TreeBuilder {
      * Gets the default namespace for this TreeBuilder
      * @return the default namespace
      */
-    open fun defaultNamespace(): String? {
+    open fun defaultNamespace(): String {
         return Parser.Companion.NamespaceHtml
     }
 
-    open fun defaultTagSet(): TagSet? {
-        return TagSet.Companion.Html()
+    open fun defaultTagSet(): TagSet {
+        return TagSet.Html()
     }
 
     /**

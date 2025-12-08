@@ -19,7 +19,7 @@ class XmlTreeBuilder : TreeBuilder() {
     private val namespacesStack =
         ArrayDeque<HashMap<String?, String?>?>() // stack of namespaces, prefix => urn
 
-    override fun defaultSettings(): ParseSettings? {
+    override fun defaultSettings(): ParseSettings {
         return ParseSettings.Companion.preserveCase
     }
 

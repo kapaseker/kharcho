@@ -1,7 +1,6 @@
 package io.kapaseker.kharcho.internal
 
 import io.kapaseker.kharcho.Progress
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import java.io.BufferedInputStream
 import java.io.FilterInputStream
@@ -30,10 +29,8 @@ class ControllableInputStream private constructor(`in`: SimpleBufferedInput, max
         true // for cases where we want to re-read the input, can ignore .close() from the parser
 
     // if we are tracking progress, will have the expected content length, progress callback, connection
-    @Nullable
     private var progress: Progress<*>? = null
 
-    @Nullable
     private var progressContext: Any? = null
     private var contentLength = -1
     private var readPos = 0 // amount read; can be reset()
@@ -203,12 +200,11 @@ class ControllableInputStream private constructor(`in`: SimpleBufferedInput, max
          * reading just the first bytes.
          */
         @Throws(IOException::class)
-        fun readToByteBuffer(`in`: InputStream, max: Int): ByteBuffer {
+        fun readToByteBuffer(inStream: InputStream, max: Int): ByteBuffer {
             Validate.isTrue(max >= 0, "maxSize must be 0 (unlimited) or larger")
-            Validate.notNull(`in`)
+            Validate.notNull(inStream)
             val capped = max > 0
-            val readBuf: ByteArray =
-                SimpleBufferedInput.Companion.BufferPool.borrow() // Share the same byte[] pool as SBI
+            val readBuf: ByteArray = SimpleBufferedInput.Companion.BufferPool.borrow() // Share the same byte[] pool as SBI
             val outSize = if (capped) min(
                 max,
                 SharedConstants.DefaultBufferSize
@@ -218,7 +214,7 @@ class ControllableInputStream private constructor(`in`: SimpleBufferedInput, max
             try {
                 var remaining = max
                 var read: Int
-                while ((`in`.read(
+                while ((inStream.read(
                         readBuf,
                         0,
                         if (capped) min(

@@ -131,32 +131,13 @@ object Validate {
 
     /**
      * Validates that the value is false
-     * @param val object to test
+     * @param `val` object to test
      * @param msg message to include in the Exception if validation fails
      * @throws ValidationException if the object is not false
      */
     @JvmStatic
-    fun isFalse(`val`: Boolean, msg: String?) {
-        if (`val`) throw ValidationException(msg)
-    }
-
-    /**
-     * Validates that the array contains no null elements
-     * @param objects the array to test
-     * @param msg message to include in the Exception if validation fails
-     * @throws ValidationException if the array contains a null element
-     */
-    /**
-     * Validates that the array contains no null elements
-     * @param objects the array to test
-     * @throws ValidationException if the array contains a null element
-     */
-    @JvmOverloads
-    fun noNullElements(
-        objects: Array<out Any>,
-        msg: String? = "Array must not contain any null objects"
-    ) {
-        for (obj in objects) if (obj == null) throw ValidationException(msg)
+    fun isFalse(testBool: Boolean, msg: String?) {
+        if (testBool) throw ValidationException(msg)
     }
 
     /**
@@ -213,17 +194,6 @@ object Validate {
     @JvmStatic
     fun fail(msg: String?) {
         throw ValidationException(msg)
-    }
-
-    /**
-     * Cause a failure, but return false so it can be used in an assert statement.
-     * @param msg message to output.
-     * @return false, always
-     * @throws IllegalStateException if we reach this state
-     */
-    fun assertFail(msg: String?): Boolean {
-        fail(msg)
-        return false
     }
 
     /**

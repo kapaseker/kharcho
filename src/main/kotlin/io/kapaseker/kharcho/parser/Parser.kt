@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.parser
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import io.kapaseker.kharcho.nodes.Document
 import io.kapaseker.kharcho.nodes.Element
@@ -41,7 +40,6 @@ class Parser : Cloneable {
     var isTrackPosition: Boolean = false
         private set
 
-    @Nullable
     private var tagSet: TagSet? = null
     private val lock = ReentrantLock()
 
@@ -103,7 +101,7 @@ class Parser : Cloneable {
      * @return parsed Document
      * @throws java.io.UncheckedIOException if an I/O error occurs in the Reader
      */
-    fun parseInput(inputHtml: Reader?, baseUri: String?): Document? {
+    fun parseInput(inputHtml: Reader, baseUri: String): Document {
         try {
             lock.lock() // using a lock vs synchronized to support loom threads
             return treeBuilder.parse(inputHtml, baseUri, this)
@@ -157,7 +155,7 @@ class Parser : Cloneable {
          * Check if parse error tracking is enabled.
          * @return current track error state.
          */
-        get() = errors.getMaxSize() > 0
+        get() = errors.maxSize > 0
 
     /**
      * Enable or disable parse error tracking for the next parse.
@@ -234,12 +232,11 @@ class Parser : Cloneable {
      * @return the current TagSet. After the parse, this will contain any new tags that were found in the document.
      * @since 1.20.1
      */
-    fun tagSet(): TagSet? {
-        if (tagSet == null) tagSet = treeBuilder.defaultTagSet()
-        return tagSet
+    fun tagSet(): TagSet {
+        return tagSet ?: treeBuilder.defaultTagSet().also { tagSet = it }
     }
 
-    fun defaultNamespace(): String? {
+    fun defaultNamespace(): String {
         return this.treeBuilder.defaultNamespace()
     }
 
@@ -295,8 +292,8 @@ class Parser : Cloneable {
         fun parseFragment(
             fragmentHtml: String,
             context: Element?,
-            baseUri: String?
-        ): MutableList<Node?>? {
+            baseUri: String
+        ): MutableList<Node> {
             val treeBuilder = HtmlTreeBuilder()
             return treeBuilder.parseFragment(
                 StringReader(fragmentHtml),
@@ -321,9 +318,9 @@ class Parser : Cloneable {
         fun parseFragment(
             fragmentHtml: String,
             context: Element?,
-            baseUri: String?,
+            baseUri: String,
             errorList: ParseErrorList
-        ): MutableList<Node?>? {
+        ): MutableList<Node> {
             val treeBuilder = HtmlTreeBuilder()
             val parser = Parser(treeBuilder)
             parser.errors = errorList
@@ -337,7 +334,7 @@ class Parser : Cloneable {
          * @param baseUri base URI of document (i.e. original fetch location), for resolving relative URLs.
          * @return list of nodes parsed from the input XML.
          */
-        fun parseXmlFragment(fragmentXml: String, baseUri: String?): MutableList<Node?>? {
+        fun parseXmlFragment(fragmentXml: String, baseUri: String): MutableList<Node> {
             val treeBuilder = XmlTreeBuilder()
             return treeBuilder.parseFragment(
                 StringReader(fragmentXml),
@@ -355,10 +352,10 @@ class Parser : Cloneable {
          *
          * @return Document, with empty head, and HTML parsed into body
          */
-        fun parseBodyFragment(bodyHtml: String, baseUri: String?): Document {
+        fun parseBodyFragment(bodyHtml: String, baseUri: String): Document {
             val doc = Document.createShell(baseUri)
             val body = doc.body()
-            val nodeList: MutableList<Node?>? = parseFragment(bodyHtml, body, baseUri)
+            val nodeList: MutableList<Node> = parseFragment(bodyHtml, body, baseUri)
             body.appendChildren(nodeList)
             return doc
         }

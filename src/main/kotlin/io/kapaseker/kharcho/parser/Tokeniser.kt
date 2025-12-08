@@ -10,7 +10,7 @@ import java.util.*
 /**
  * Readers the input stream into tokens.
  */
-internal class Tokeniser(treeBuilder: TreeBuilder) {
+class Tokeniser(treeBuilder: TreeBuilder) {
     private val reader: CharacterReader // html input
     private val errors: ParseErrorList // errors found while tokenising
 

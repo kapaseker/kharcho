@@ -190,7 +190,7 @@ object DataUtil {
             charsetDoc = detectCharset(input, charsetName, baseUri, parser)
             doc = parseInputStream(charsetDoc, baseUri, parser)
         } finally {
-            if (charsetDoc != null) charsetDoc.input.close()
+            charsetDoc?.input?.close()
         }
         return doc
     }
@@ -282,7 +282,7 @@ object DataUtil {
     }
 
     @Throws(IOException::class)
-    fun parseInputStream(charsetDoc: CharsetDoc, baseUri: String?, parser: Parser): Document {
+    fun parseInputStream(charsetDoc: CharsetDoc, baseUri: String, parser: Parser): Document {
         // if doc != null it was fully parsed during charset detection; so just return that
         if (charsetDoc.doc != null) return charsetDoc.doc!!
 
@@ -295,7 +295,7 @@ object DataUtil {
                 doc = parser.parseInput(reader, baseUri)
             } catch (e: UncheckedIOException) {
                 // io exception when parsing (not seen before because reading the stream as we go)
-                throw e.cause
+                throw e.cause ?: IOException("Parsing failed", e)
             }
             doc.outputSettings().charset(charset)
             if (!charset.canEncode()) {
@@ -304,19 +304,6 @@ object DataUtil {
             }
         }
         return doc
-    }
-
-    /**
-     * Read the input stream into a byte buffer. To deal with slow input streams, you may interrupt the thread this
-     * method is executing on. The data read until being interrupted will be available.
-     * @param inStream the input stream to read from
-     * @param maxSize the maximum size in bytes to read from the stream. Set to 0 to be unlimited.
-     * @return the filled byte buffer
-     * @throws IOException if an exception occurs whilst reading from the input stream.
-     */
-    @Throws(IOException::class)
-    fun readToByteBuffer(inStream: InputStream?, maxSize: Int): ByteBuffer {
-        return ControllableInputStream.readToByteBuffer(inStream, maxSize)
     }
 
     fun emptyByteBuffer(): ByteBuffer {
@@ -329,8 +316,7 @@ object DataUtil {
      * @param contentType e.g. "text/html; charset=EUC-JP"
      * @return "EUC-JP", or null if not found. Charset is trimmed and uppercased.
      */
-    @Nullable
-    fun getCharsetFromContentType(@Nullable contentType: String?): String? {
+    fun getCharsetFromContentType(contentType: String?): String? {
         if (contentType == null) return null
         val m = charsetPattern.matcher(contentType)
         if (m.find()) {
@@ -341,8 +327,7 @@ object DataUtil {
         return null
     }
 
-    @Nullable
-    private fun validateCharset(@Nullable cs: String?): String? {
+    private fun validateCharset(cs: String?): String? {
         var cs = cs
         if (cs == null || cs.length == 0) return null
         cs = cs.trim { it <= ' ' }.replace("[\"']".toRegex(), "")
@@ -368,7 +353,6 @@ object DataUtil {
         return StringUtil.releaseBuilder(mime)
     }
 
-    @Nullable
     @Throws(IOException::class)
     private fun detectCharsetFromBom(input: ControllableInputStream): String? {
         val bom = ByteArray(4)

@@ -13,7 +13,7 @@ import java.util.regex.Pattern
  */
 class Attribute(key: String, @Nullable `val`: String?, @Nullable parent: Attributes?) :
     MutableMap.MutableEntry<String?, String?>, Cloneable {
-    private var key: String
+    var key: String
 
     @Nullable
     private var `val`: String?
@@ -324,7 +324,6 @@ class Attribute(key: String, @Nullable `val`: String?, @Nullable parent: Attribu
          * @return the original key if it's valid; a key with invalid characters replaced with "_" otherwise; or null if a valid key could not be created.
          */
         @JvmStatic
-        @Nullable
         fun getValidKey(key: String, syntax: Document.OutputSettings.Syntax?): String? {
             var key = key
             if (syntax == Document.OutputSettings.Syntax.xml && !isValidXmlKey(key)) {

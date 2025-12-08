@@ -22,7 +22,7 @@ class SoftPool<T>(private val initializer: Supplier<T>) {
      * when done, so that it can be reused.
      * @return an object from the pool, as defined by the initializer.
      */
-    fun borrow(): T? {
+    fun borrow(): T {
         val stack = this.stack
         if (!stack.isEmpty()) {
             return stack.removeFirst()

@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.internal
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import java.io.FilterInputStream
 import java.io.IOException
@@ -13,15 +12,15 @@ import kotlin.math.min
  * use between threads; no sync or locks. The buffer is borrowed on initial demand in fill.
  * @since 1.18.2
  */
-internal class SimpleBufferedInput(@Nullable `in`: InputStream?) : FilterInputStream(`in`) {
-    private var byteBuf: @Nullable ByteArray? // the byte buffer; recycled via SoftPool. Created in fill if required
+internal class SimpleBufferedInput(inStream: InputStream?) : FilterInputStream(inStream) {
+    private var byteBuf:ByteArray? = null // the byte buffer; recycled via SoftPool. Created in fill if required
     private var bufPos = 0
     private var bufLength = 0
     private var bufMark = -1
     private var inReadFully = false // true when the underlying inputstream has been read fully
 
     init {
-        if (`in` == null) inReadFully = true // effectively an empty stream
+        if (inStream == null) inReadFully = true // effectively an empty stream
     }
 
     @Throws(IOException::class)
@@ -141,15 +140,15 @@ internal class SimpleBufferedInput(@Nullable `in`: InputStream?) : FilterInputSt
     @Throws(IOException::class)
     override fun close() {
         if (`in` != null) super.close()
-        if (byteBuf == null) return  // already closed, or never allocated
+        val byteBuf = byteBuf ?: return
 
         BufferPool.release(byteBuf) // return the buffer to the pool
-        byteBuf = null // NPE further attempts to read
+        this.byteBuf = null // NPE further attempts to read
     }
 
     companion object {
         val BufferSize: Int = SharedConstants.DefaultBufferSize
-        val BufferPool: SoftPool<ByteArray?> =
-            SoftPool<ByteArray?>(Supplier { ByteArray(BufferSize) })
+        val BufferPool: SoftPool<ByteArray> =
+            SoftPool<ByteArray>(Supplier { ByteArray(BufferSize) })
     }
 }

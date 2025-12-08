@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.helper
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.internal.Normalizer
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.*
@@ -238,15 +237,15 @@ class W3CDom {
      * Implements the conversion by walking the input.
      */
     protected class W3CBuilder(private val doc: Document) : NodeVisitor {
-        private var namespaceAware = true
+        var namespaceAware = true
         private var dest: Node
-        private var syntax: io.kapaseker.kharcho.nodes.Document.OutputSettings.Syntax? =
+        var syntax: io.kapaseker.kharcho.nodes.Document.OutputSettings.Syntax? =
             io.kapaseker.kharcho.nodes.Document.OutputSettings.Syntax.xml // the syntax (to coerce attributes to). From the input doc if available.
 
         /*@Nullable*/
         private val contextElement: Element? // todo - unsure why this can't be marked nullable?
 
-        override fun head(source: io.kapaseker.kharcho.nodes.Node?, depth: Int) {
+        override fun head(source: io.kapaseker.kharcho.nodes.Node, depth: Int) {
             if (source is Element) {
                 val sourceEl = source
                 val namespace = if (namespaceAware) sourceEl.tag().namespace() else null
@@ -254,7 +253,7 @@ class W3CDom {
                 try {
                     // use an empty namespace if none is present but the tag name has a prefix
                     val imputedNamespace =
-                        if (namespace == null && tagName.contains(":")) "" else namespace
+                        if (namespace == null && tagName.orEmpty().contains(":")) "" else namespace
                     val el = doc.createElementNS(imputedNamespace, tagName)
                     copyAttributes(sourceEl, el)
                     append(el, sourceEl)
@@ -266,15 +265,15 @@ class W3CDom {
                 }
             } else if (source is TextNode) {
                 val sourceText = source
-                val text = doc.createTextNode(sourceText.getWholeText())
+                val text = doc.createTextNode(sourceText.wholeText)
                 append(text, sourceText)
             } else if (source is Comment) {
                 val sourceComment = source
-                val comment = doc.createComment(sourceComment.getData())
+                val comment = doc.createComment(sourceComment.data)
                 append(comment, sourceComment)
             } else if (source is DataNode) {
                 val sourceData = source
-                val node = doc.createTextNode(sourceData.getWholeData())
+                val node = doc.createTextNode(sourceData.wholeData)
                 append(node, sourceData)
             } else {
                 // unhandled. note that doctype is not handled here - rather it is used in the initial doc creation
@@ -286,7 +285,7 @@ class W3CDom {
             dest.appendChild(append)
         }
 
-        override fun tail(source: io.kapaseker.kharcho.nodes.Node?, depth: Int) {
+        override fun tail(source: io.kapaseker.kharcho.nodes.Node, depth: Int) {
             if (source is Element && dest.getParentNode() is org.w3c.dom.Element) {
                 dest = dest.getParentNode() // undescend
             }
@@ -439,7 +438,7 @@ class W3CDom {
         @JvmOverloads
         fun asString(
             doc: Document,
-            @Nullable properties: MutableMap<String?, String?>? = null
+            properties: MutableMap<String?, String?>? = null
         ): String? {
             try {
                 val domSource = DOMSource(doc)

@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.internal
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.nodes.Attribute
 import io.kapaseker.kharcho.nodes.Document
 
@@ -31,8 +30,7 @@ object Normalizer {
 
     /** Minimal helper to get an otherwise OK HTML name like "foo&lt;bar" to "foo_bar".  */
     @JvmStatic
-    @Nullable
-    fun xmlSafeTagName(tagname: String?): String? {
+    fun xmlSafeTagName(tagname: String): String? {
         return Attribute.getValidKey(
             tagname,
             Document.OutputSettings.Syntax.xml

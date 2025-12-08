@@ -9,7 +9,7 @@ import io.kapaseker.kharcho.nodes.Range
 /**
  * Parse tokens for the Tokeniser.
  */
-internal abstract class Token private constructor(type: TokenType?) {
+abstract class Token private constructor(type: TokenType?) {
     val type: TokenType? // used in switches in TreeBuilder vs .getClass()
     var startPos: Int = 0
     var endPos: Int = UnsetPos // position in CharacterReader this token was read from

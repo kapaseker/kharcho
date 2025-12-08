@@ -39,7 +39,7 @@ class HtmlTreeBuilder : TreeBuilder() {
     var isFragmentParsing: Boolean = false // if parsing a fragment of html
         private set
 
-    override fun defaultSettings(): ParseSettings? {
+    override fun defaultSettings(): ParseSettings {
         return ParseSettings.Companion.htmlDefault
     }
 

@@ -368,23 +368,24 @@ object StringUtil {
     @JvmStatic
     fun joining(delimiter: String?): Collector<CharSequence?, *, String?> {
         return Collector.of<CharSequence?, StringJoiner?, String?>(
-            Supplier { StringJoiner(delimiter) },
-            BiConsumer { obj: StringJoiner?, stringy: CharSequence? -> obj!!.add(stringy) },
-            BinaryOperator { j1: StringJoiner?, j2: StringJoiner? ->
+            { StringJoiner(delimiter) },
+            { obj: StringJoiner?, stringy: CharSequence? -> obj!!.add(stringy) },
+            { j1: StringJoiner?, j2: StringJoiner? ->
                 j1!!.append(j2!!.complete())
                 j1
             },
-            Function { obj: StringJoiner? -> obj!!.complete() })
+            { obj: StringJoiner? -> obj!!.complete() })
     }
 
     @JvmStatic
     fun isAsciiLetter(c: Char): Boolean {
-        return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
+        c.isLetter()
+        return c in 'a'..'z' || c in 'A'..'Z'
     }
 
     @JvmStatic
     fun isDigit(c: Char): Boolean {
-        return c >= '0' && c <= '9'
+        return c in '0'..'9'
     }
 
     @JvmStatic
@@ -403,8 +404,7 @@ object StringUtil {
      *
      * @param separator the token to insert between strings
      */(val separator: String?) {
-        @Nullable
-        var sb: StringBuilder? =
+        var sb: StringBuilder =
             borrowBuilder() // sets null on builder release so can't accidentally be reused
         var first: Boolean = true
 
@@ -412,9 +412,9 @@ object StringUtil {
          * Add another item to the joiner, will be separated
          */
         fun add(stringy: Any?): StringJoiner {
-            Validate.notNull(sb!!) // don't reuse
-            if (!first) sb!!.append(separator)
-            sb!!.append(stringy)
+            Validate.notNull(sb) // don't reuse
+            if (!first) sb.append(separator)
+            sb.append(stringy)
             first = false
             return this
         }
@@ -423,8 +423,8 @@ object StringUtil {
          * Append content to the current item; not separated
          */
         fun append(stringy: Any?): StringJoiner {
-            Validate.notNull(sb!!) // don't reuse
-            sb!!.append(stringy)
+            Validate.notNull(sb) // don't reuse
+            sb.append(stringy)
             return this
         }
 
@@ -432,8 +432,7 @@ object StringUtil {
          * Return the joined string, and release the builder back to the pool. This joiner cannot be reused.
          */
         fun complete(): String {
-            val string = StringUtil.releaseBuilder(sb!!)
-            sb = null
+            val string = releaseBuilder(sb)
             return string
         }
     }

@@ -595,7 +595,6 @@ protected constructor() : Cloneable {
             }
         }
 
-        Validate.noNullElements(children)
         for (child in children) {
             reparentChild(child)
         }
