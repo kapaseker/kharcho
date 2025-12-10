@@ -16,7 +16,6 @@ import io.kapaseker.kharcho.select.NodeFilter;
 import io.kapaseker.kharcho.select.NodeVisitor;
 import io.kapaseker.kharcho.select.Nodes;
 import io.kapaseker.kharcho.select.Selector;
-import io.kapaseker.kharcho.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -451,7 +450,7 @@ public class Element extends Node implements Iterable<Element> {
      @since 1.17.1
      */
     public Stream<Element> stream() {
-        return NodeUtils.stream(this, Element.class);
+        return NodeUtils.stream(this);
     }
 
     private <T> List<T> filterNodes(Class<T> clazz) {
@@ -1690,7 +1689,7 @@ public class Element extends Node implements Iterable<Element> {
         Validate.notNull(text);
         empty();
         // special case for script/style in HTML (or customs): should be data node
-        if (tag().is(Tag.Data))
+        if (tag().andOption(Tag.Data))
             appendChild(new DataNode(text));
         else
             appendChild(new TextNode(text));
@@ -1928,7 +1927,7 @@ public class Element extends Node implements Iterable<Element> {
 
         if (childNodes.isEmpty()) {
             boolean xmlMode = out.syntax() == xml || !tag.namespace().equals(NamespaceHtml);
-            if (xmlMode && (tag.is(Tag.SeenSelfClose) || (tag.isKnownTag() && (tag.isEmpty() || tag.isSelfClosing())))) {
+            if (xmlMode && (tag.andOption(Tag.SeenSelfClose) || (tag.isKnownTag() && (tag.isEmpty() || tag.isSelfClosing())))) {
                 accum.append(" />");
             } else if (!xmlMode && tag.isEmpty()) { // html void element
                 accum.append('>');

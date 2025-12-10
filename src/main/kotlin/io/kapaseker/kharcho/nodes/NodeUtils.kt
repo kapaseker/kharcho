@@ -27,6 +27,7 @@ internal object NodeUtils {
     /**
      * Get the parser that was used to make this node, or the default HTML parser if it has no parent.
      */
+    @JvmStatic
     fun parser(node: Node): Parser {
         val doc = node.ownerDocument()
         return doc?.parser() ?: Parser(HtmlTreeBuilder())
@@ -55,6 +56,7 @@ internal object NodeUtils {
     }
 
     /** Creates a Stream, starting with the supplied node.  */
+    @JvmStatic
     fun <T : Node> stream(
         start: Node,
     ): Stream<T> {

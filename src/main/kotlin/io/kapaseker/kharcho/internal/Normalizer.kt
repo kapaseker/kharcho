@@ -10,7 +10,7 @@ object Normalizer {
     /** Drops the input string to lower case.  */
     @JvmStatic
     fun lowerCase(input: String?): String {
-        return if (input != null) input.lowercase() else ""
+        return input?.lowercase() ?: ""
     }
 
     /** Lower-cases and trims the input string.  */

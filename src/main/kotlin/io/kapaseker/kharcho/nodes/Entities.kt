@@ -201,7 +201,7 @@ object Entities {
             // html specific and required escapes:
             when (c) {
                 '&' -> accum.append("&amp;")
-                0xA0 -> appendNbsp(accum, escapeMode)
+                Char(0xA0) -> appendNbsp(accum, escapeMode)
                 '<' -> accum.append("&lt;")
                 '>' -> accum.append("&gt;")
                 '"' -> if ((options and ForAttribute) != 0) accum.append("&quot;")
@@ -210,7 +210,7 @@ object Entities {
                 '\'' ->                     // special case for the Entities.escape(string) method when we are maximally escaping. Otherwise, because we output attributes in "", there's no need to escape.
                     appendApos(accum, options, escapeMode)
 
-                0x9, 0xA, 0xD -> accum.append(c)
+               Char(0x9),Char(0xA), Char(0xD) -> accum.append(c)
                 else -> if (c.code < 0x20 || !canEncode(coreCharset, c, fallback)) appendEncoded(
                     accum,
                     escapeMode,
@@ -250,8 +250,8 @@ object Entities {
     private fun appendEncoded(accum: QuietAppendable, escapeMode: EscapeMode, codePoint: Int) {
         val name = escapeMode.nameForCodepoint(codePoint)
         if (emptyName != name)  // ok for identity check
-            accum.append('&')!!.append(name)!!.append(';')
-        else accum.append("&#x")!!.append(Integer.toHexString(codePoint))!!.append(';')
+            accum.append('&').append(name).append(';')
+        else accum.append("&#x").append(Integer.toHexString(codePoint)).append(';')
     }
 
     /**
@@ -316,10 +316,10 @@ object Entities {
     }
 
     private fun load(e: EscapeMode, pointsData: String, size: Int) {
-        e.nameKeys = arrayOfNulls<String>(size)
+        e.nameKeys = Array(size) { "" }
         e.codeVals = IntArray(size)
         e.codeKeys = IntArray(size)
-        e.nameVals = arrayOfNulls<String>(size)
+        e.nameVals = Array(size) { "" }
 
         var i = 0
         CharacterReader(pointsData).use { reader ->
@@ -373,12 +373,12 @@ object Entities {
         extended(EntitiesData.fullPoints, 2125);
 
         // table of named references to their codepoints. sorted so we can binary search. built by BuildEntities.
-        private var nameKeys: Array<String?>
-        private var codeVals: IntArray // limitation is the few references with multiple characters; those go into multipoints.
+        lateinit var nameKeys: Array<String>
+        lateinit var codeVals: IntArray // limitation is the few references with multiple characters; those go into multipoints.
 
         // table of codepoints to named entities.
-        private var codeKeys: IntArray // we don't support multicodepoints to single named value currently
-        private var nameVals: Array<String?>
+        lateinit var codeKeys: IntArray // we don't support multicodepoints to single named value currently
+        lateinit var nameVals: Array<String>
 
         init {
             load(this, file, size)
@@ -389,7 +389,7 @@ object Entities {
             return if (index >= 0) codeVals[index] else empty
         }
 
-        fun nameForCodepoint(codepoint: Int): String? {
+        fun nameForCodepoint(codepoint: Int): String {
             val index = Arrays.binarySearch(codeKeys, codepoint)
             if (index >= 0) {
                 // the results are ordered so lower case versions of same codepoint come after uppercase, and we prefer to emit lower
@@ -402,8 +402,8 @@ object Entities {
         companion object {
             init {
                 // sort the base names by length, for prefix matching
-                Collections.addAll<String?>(baseSorted, *EscapeMode.base.nameKeys)
-                baseSorted.sort(Comparator { a: String?, b: String? -> b!!.length - a!!.length })
+                Collections.addAll(baseSorted, *base.nameKeys)
+                baseSorted.sortWith(Comparator { a: String, b: String -> b.length - a.length })
             }
         }
     }

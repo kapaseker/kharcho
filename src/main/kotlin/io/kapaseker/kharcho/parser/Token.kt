@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.parser
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import io.kapaseker.kharcho.internal.Normalizer
 import io.kapaseker.kharcho.nodes.Attributes
@@ -9,14 +8,10 @@ import io.kapaseker.kharcho.nodes.Range
 /**
  * Parse tokens for the Tokeniser.
  */
-abstract class Token private constructor(type: TokenType?) {
-    val type: TokenType? // used in switches in TreeBuilder vs .getClass()
+abstract class Token private constructor(val type: TokenType) {
+
     var startPos: Int = 0
     var endPos: Int = UnsetPos // position in CharacterReader this token was read from
-
-    init {
-        this.type = type
-    }
 
     fun tokenType(): String {
         return this.javaClass.getSimpleName()
@@ -51,8 +46,6 @@ abstract class Token private constructor(type: TokenType?) {
     internal class Doctype : Token(TokenType.Doctype) {
         val name: TokenData = TokenData()
 
-        @get:Nullable
-        @Nullable
         var pubSysKey: String? = null
         val publicIdentifier: TokenData = TokenData()
         val systemIdentifier: TokenData = TokenData()
@@ -85,14 +78,12 @@ abstract class Token private constructor(type: TokenType?) {
         }
     }
 
-    internal abstract class Tag(type: TokenType?, treeBuilder: TreeBuilder) : Token(type) {
+    internal abstract class Tag(type: TokenType, treeBuilder: TreeBuilder) : Token(type) {
         var tagName: TokenData = TokenData()
 
-        @Nullable
         var normalName: String? = null // lc version of tag name, for case-insensitive tree build
         var isSelfClosing: Boolean = false
 
-        @Nullable
         var attributes: Attributes? =
             null // start tags get attributes on construction. End tags get attributes on first new attribute (but only for parser convenience, not used).
 

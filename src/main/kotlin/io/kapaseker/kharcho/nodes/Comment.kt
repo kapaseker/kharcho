@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.nodes
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.internal.QuietAppendable
 import io.kapaseker.kharcho.parser.Parser
 

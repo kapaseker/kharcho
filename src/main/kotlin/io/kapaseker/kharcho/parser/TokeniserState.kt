@@ -7,7 +7,7 @@ import io.kapaseker.kharcho.parser.Token.XmlDecl
 /**
  * States and transition activations for the Tokeniser.
  */
-internal enum class TokeniserState {
+enum class TokeniserState {
     Data {
         // in data state, gather characters until a character reference or tag is found
         override fun read(t: Tokeniser, r: CharacterReader) {

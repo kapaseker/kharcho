@@ -16,7 +16,8 @@ import java.nio.charset.Charset
  * @author Jonathan Hedley, jonathan@hedley.net
  */
 class Document private constructor(
-    namespace: String?, private val location: String?, // the parser used to parse this document
+    namespace: String,
+    private val location: String, // the parser used to parse this document
     private var parser: Parser
 ) : Element(
     Tag("#root", namespace),
@@ -32,7 +33,7 @@ class Document private constructor(
      * @see Jsoup.parse
      * @see .createShell
      */
-    constructor(namespace: String?, baseUri: String?) : this(
+    constructor(namespace: String, baseUri: String) : this(
         namespace,
         baseUri,
         Parser.htmlParser()
@@ -45,7 +46,7 @@ class Document private constructor(
      * @see Jsoup.parse
      * @see .Document
      */
-    constructor(baseUri: String?) : this(Parser.Companion.NamespaceHtml, baseUri)
+    constructor(baseUri: String) : this(Parser.NamespaceHtml, baseUri)
 
     /**
      * Get the URL this Document was parsed from. If the starting URL is a redirect,
@@ -54,7 +55,7 @@ class Document private constructor(
      * Will return an empty string if the location is unknown (e.g. if parsed from a String).
      * @return location
      */
-    fun location(): String? {
+    fun location(): String {
         return location
     }
 
@@ -129,7 +130,7 @@ class Document private constructor(
      * @see FormElement.elements
      * @since 1.15.4
      */
-    fun forms(): MutableList<FormElement?> {
+    fun forms(): MutableList<FormElement> {
         return select("form").forms()
     }
 
@@ -187,7 +188,7 @@ class Document private constructor(
         )
     }
 
-    public override fun outerHtml(): String? {
+    public override fun outerHtml(): String {
         return super.html() // no outer wrapper tag
     }
 
@@ -201,7 +202,7 @@ class Document private constructor(
         return this
     }
 
-    override fun nodeName(): String? {
+    override fun nodeName(): String {
         return "#document"
     }
 
@@ -240,10 +241,10 @@ class Document private constructor(
         return outputSettings.charset()
     }
 
-    override fun clone(): Document? {
-        val clone = super.clone() as Document?
-        if (attributes != null) clone!!.attributes = attributes.clone()
-        clone!!.outputSettings = this.outputSettings.clone()
+    override fun clone(): Document {
+        val clone = super.clone() as Document
+        if (attributes != null) clone.attributes = attributes.clone()
+        clone.outputSettings = this.outputSettings.clone()
         // parser is pointer copy
         return clone
     }
@@ -308,7 +309,7 @@ class Document private constructor(
         private var outline = false
         private var indentAmount = 1
         private var maxPaddingWidth = 30
-        private var syntax: Syntax? = Syntax.html
+        private var syntax: Syntax = Syntax.html
 
         /**
          * Get the document's current entity escape mode:
@@ -375,7 +376,7 @@ class Document private constructor(
          * Get the document's current output syntax.
          * @return current syntax
          */
-        fun syntax(): Syntax? {
+        fun syntax(): Syntax {
             return syntax
         }
 
@@ -388,7 +389,7 @@ class Document private constructor(
          * @param syntax serialization syntax
          * @return the document's output settings, for chaining
          */
-        fun syntax(syntax: Syntax?): OutputSettings {
+        fun syntax(syntax: Syntax): OutputSettings {
             this.syntax = syntax
             if (syntax == Syntax.xml) this.escapeMode(Entities.EscapeMode.xhtml)
             return this

@@ -4,9 +4,6 @@ import io.kapaseker.kharcho.helper.Validate
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.function.BiConsumer
-import java.util.function.BinaryOperator
-import java.util.function.Function
 import java.util.function.Supplier
 import java.util.regex.Pattern
 import java.util.stream.Collector
@@ -18,7 +15,7 @@ import kotlin.math.min
  */
 object StringUtil {
     // memoised padding up to 21 (blocks 0 to 20 spaces)
-    val padding: Array<String?> = arrayOf<String?>(
+    val padding: Array<String> = arrayOf(
         "",
         " ",
         "  ",
@@ -48,7 +45,7 @@ object StringUtil {
      * @param sep string to place between strings
      * @return joined string
      */
-    fun join(strings: MutableCollection<*>, sep: String?): String? {
+    fun join(strings: MutableCollection<*>, sep: String): String {
         return join(strings.iterator(), sep)
     }
 
@@ -58,10 +55,10 @@ object StringUtil {
      * @param sep string to place between strings
      * @return joined string
      */
-    fun join(strings: MutableIterator<*>, sep: String?): String? {
+    fun join(strings: MutableIterator<*>, sep: String): String {
         if (!strings.hasNext()) return ""
 
-        val start: String? = strings.next().toString()
+        val start: String = strings.next().toString()
         if (!strings.hasNext())  // only one, avoid builder
             return start
 
@@ -79,8 +76,8 @@ object StringUtil {
      * @param sep string to place between strings
      * @return joined string
      */
-    fun join(strings: Array<String?>, sep: String?): String? {
-        return join(Arrays.asList<String?>(*strings), sep)
+    fun join(strings: Array<String>, sep: String): String {
+        return join(Arrays.asList(*strings), sep)
     }
 
     /**
@@ -97,7 +94,7 @@ object StringUtil {
      */
     @JvmStatic
     @JvmOverloads
-    fun padding(width: Int, maxPaddingWidth: Int = 30): String? {
+    fun padding(width: Int, maxPaddingWidth: Int = 30): String {
         var width = width
         Validate.isTrue(width >= 0, "width must be >= 0")
         Validate.isTrue(maxPaddingWidth >= -1)
@@ -114,14 +111,8 @@ object StringUtil {
      * @return if string is blank
      */
     @JvmStatic
-    fun isBlank(string: String?): Boolean {
-        if (string == null || string.isEmpty()) return true
-
-        val l = string.length
-        for (i in 0..<l) {
-            if (!isWhitespace(string.codePointAt(i))) return false
-        }
-        return true
+    fun isBlank(string: String): Boolean {
+        return string.isBlank()
     }
 
     /**
@@ -130,7 +121,7 @@ object StringUtil {
      * @return if its first character is a newline
      */
     fun startsWithNewline(string: String?): Boolean {
-        if (string == null || string.length == 0) return false
+        if (string.isNullOrEmpty()) return false
         return string.get(0) == '\n'
     }
 
@@ -140,11 +131,11 @@ object StringUtil {
      * @return true if only digit chars, false if empty or null or contains non-digit chars
      */
     fun isNumeric(string: String?): Boolean {
-        if (string == null || string.length == 0) return false
+        if (string.isNullOrEmpty()) return false
 
         val l = string.length
         for (i in 0..<l) {
-            if (!isDigit(string.get(i))) return false
+            if (!isDigit(string[i])) return false
         }
         return true
     }

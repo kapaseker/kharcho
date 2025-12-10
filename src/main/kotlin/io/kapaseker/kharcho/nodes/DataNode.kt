@@ -12,8 +12,8 @@ class DataNode
  * Create a new DataNode.
  * @param data data contents
  */
-    (data: String?) : LeafNode(data) {
-    public override fun nodeName(): String? {
+    (data: String) : LeafNode(data) {
+    public override fun nodeName(): String {
         return "#data"
     }
 
@@ -50,7 +50,7 @@ class DataNode
         }
     }
 
-    override fun clone(): DataNode? {
-        return super.clone() as DataNode?
+    override fun clone(): DataNode {
+        return super.clone() as DataNode
     }
 }

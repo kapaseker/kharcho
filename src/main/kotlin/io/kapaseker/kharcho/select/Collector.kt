@@ -55,9 +55,9 @@ object Collector {
      * @return A [Stream] of matches
      * @since 1.21.1
     </T> */
-    fun <T : Node?> streamNodes(evaluator: Evaluator, root: Element, type: Class<T?>?): Stream<T?> {
+    fun <T : Node?> streamNodes(evaluator: Evaluator, root: Element, type: Class<T?>?): Stream<T> {
         evaluator.reset()
-        return root.nodeStream<T?>(type).filter(evaluator.asNodePredicate(root))
+        return root.nodeStream<T>(type).filter(evaluator.asNodePredicate(root))
     }
 
     /**
@@ -68,7 +68,7 @@ object Collector {
      * @return the first match; `null` if none
      */
     @JvmStatic
-    fun findFirst(eval: Evaluator, root: Element): @Nullable Element? {
+    fun findFirst(eval: Evaluator, root: Element): Element? {
         val el = stream(eval, root).findFirst().orElse(null)
         eval.reset()
         return el

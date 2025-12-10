@@ -1,13 +1,13 @@
 package io.kapaseker.kharcho.nodes
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
+import io.kapaseker.kharcho.internal.QuietAppendable
 import io.kapaseker.kharcho.internal.StringUtil
 
 /**
  * A `<!DOCTYPE>` node.
  */
-class DocumentType(name: String?, publicId: String, systemId: String) : LeafNode(name) {
+class DocumentType(name: String, publicId: String, systemId: String) : LeafNode(name) {
     /**
      * Create a new doctype element.
      * @param name the doctype's name
@@ -17,21 +17,18 @@ class DocumentType(name: String?, publicId: String, systemId: String) : LeafNode
     init {
         Validate.notNull(publicId)
         Validate.notNull(systemId)
-        attributes()!!
-            .add(NameKey, name)
-            .add(PublicId, publicId)
-            .add(SystemId, systemId)
+        attributes().add(NameKey, name).add(PublicId, publicId).add(SystemId, systemId)
         updatePubSyskey()
     }
 
-    fun setPubSysKey(@Nullable value: String?) {
+    fun setPubSysKey(value: String?) {
         if (value != null) attr(PubSysKey, value)
     }
 
     private fun updatePubSyskey() {
         if (has(PublicId)) {
-            attributes()!!.add(PubSysKey, PUBLIC_KEY)
-        } else if (has(SystemId)) attributes()!!.add(PubSysKey, SYSTEM_KEY)
+            attributes().add(PubSysKey, PUBLIC_KEY)
+        } else if (has(SystemId)) attributes().add(PubSysKey, SYSTEM_KEY)
     }
 
     /**
@@ -58,7 +55,7 @@ class DocumentType(name: String?, publicId: String, systemId: String) : LeafNode
         return attr(SystemId)
     }
 
-    public override fun nodeName(): String? {
+    public override fun nodeName(): String {
         return "#doctype"
     }
 

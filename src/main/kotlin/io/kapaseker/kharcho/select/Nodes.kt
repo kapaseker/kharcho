@@ -1,10 +1,8 @@
 package io.kapaseker.kharcho.select
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.Node
-import java.util.*
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
 
@@ -22,25 +20,21 @@ import java.util.function.UnaryOperator
  * @see Element.selectNodes
  * @since 1.21.1
  */
-open class Nodes<T : Node?> : ArrayList<T?> {
+open class Nodes<T : Node> : ArrayList<T> {
+
     constructor()
 
     constructor(initialCapacity: Int) : super(initialCapacity)
 
-    constructor(nodes: MutableCollection<T?>) : super(nodes)
-
-    constructor(nodes: MutableList<T?>) : super(nodes)
-
-    @SafeVarargs
-    constructor(vararg nodes: T?) : super(Arrays.asList<T?>(*nodes))
+    constructor(nodes: Collection<T>) : super(nodes)
 
     /**
      * Creates a deep copy of these nodes.
      * @return a deep copy
      */
-    override fun clone(): Nodes<T?> {
-        val clone = Nodes<T?>(size)
-        for (node in this) clone.add(node!!.clone() as T?)
+    override fun clone(): Nodes<T> {
+        val clone = Nodes<T>(size)
+        for (node in this) clone.add(node.clone() as T)
         return clone
     }
 
@@ -54,8 +48,8 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return a new ArrayList containing the nodes in this list
      * @see .Nodes
      */
-    open fun asList(): ArrayList<T?>? {
-        return ArrayList<T?>(this)
+    open fun asList(): List<T> {
+        return this.toList()
     }
 
     /**
@@ -77,9 +71,9 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @see Elements.empty
      * @see .clear
      */
-    open fun remove(): Nodes<T?>? {
+    open fun remove(): Nodes<T> {
         for (node in this) {
-            node!!.remove()
+            node.remove()
         }
         return this
     }
@@ -93,7 +87,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      */
     fun outerHtml(): String? {
         return stream()
-            .map<String?> { obj: T? -> obj!!.outerHtml() }
+            .map { obj: T? -> obj!!.outerHtml() }
             .collect(StringUtil.joining("\n"))
     }
 
@@ -115,9 +109,9 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return this, for chaining
      * @see Element.before
      */
-    open fun before(html: String?): Nodes<T?>? {
+    open fun before(html: String): Nodes<T> {
         for (node in this) {
-            node!!.before(html)
+            node.before(html)
         }
         return this
     }
@@ -129,9 +123,9 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return this, for chaining
      * @see Element.after
      */
-    open fun after(html: String?): Nodes<T?>? {
+    open fun after(html: String): Nodes<T> {
         for (node in this) {
-            node!!.after(html)
+            node.after(html)
         }
         return this
     }
@@ -145,10 +139,10 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return this (for chaining)
      * @see Element.wrap
      */
-    open fun wrap(html: String?): Nodes<T?>? {
+    open fun wrap(html: String): Nodes<T> {
         Validate.notEmpty(html)
         for (node in this) {
-            node!!.wrap(html)
+            node.wrap(html)
         }
         return this
     }
@@ -158,7 +152,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * Get the first matched element.
      * @return The first matched element, or `null` if contents is empty.
      */
-    open fun first(): @Nullable T? {
+    open fun first(): T? {
         return if (isEmpty()) null else get(0)
     }
 
@@ -166,7 +160,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * Get the last matched element.
      * @return The last matched element, or `null` if contents is empty.
      */
-    open fun last(): @Nullable T? {
+    open fun last(): T? {
         return if (isEmpty()) null else get(size - 1)
     }
 
@@ -178,10 +172,10 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @param node node to be stored at the specified position
      * @return the old Node at this index
      */
-    override fun set(index: Int, node: T?): T? {
+    override fun set(index: Int, node: T): T {
         Validate.notNull(node)
-        val old = super.set(index, node)
-        old!!.replaceWith(node)
+        val old = super.set(index = index, element = node)
+        old.replaceWith(node)
         return old
     }
 
@@ -192,9 +186,9 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return the old node at this index
      * @see .deselect
      */
-    override fun remove(index: Int): T? {
+    override fun removeAt(index: Int): T {
         val old = super.removeAt(index)
-        old!!.remove()
+        old.remove()
         return old
     }
 
@@ -205,7 +199,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return if this list contained the Node
      * @see .deselect
      */
-    override fun remove(o: Any?): Boolean {
+    override fun remove(o: T): Boolean {
         val index = super.indexOf(o)
         if (index == -1) {
             return false
@@ -233,7 +227,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return if this list contained the Node
      * @see .remove
      */
-    fun deselect(o: Any?): Boolean {
+    fun deselect(o: T): Boolean {
         return super.remove(o)
     }
 
@@ -263,7 +257,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @param c collection containing nodes to be removed from this list
      * @return `true` if nodes were removed from this list
      */
-    override fun removeAll(c: MutableCollection<*>): Boolean {
+    override fun removeAll(c: Collection<T>): Boolean {
         var anyRemoved = false
         for (o in c) {
             anyRemoved = anyRemoved or this.remove(o)
@@ -280,7 +274,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @return `true` if nodes were removed from this list
      * @since 1.17.1
      */
-    override fun retainAll(toRemove: MutableCollection<*>): Boolean {
+    override fun retainAll(toRemove: Collection<T>): Boolean {
         var anyRemoved = false
         val it = this.iterator()
         while (it.hasNext()) {
@@ -299,7 +293,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      * @param filter a predicate which returns `true` for nodes to be removed
      * @return `true` if nodes were removed from this list
      */
-    override fun removeIf(filter: Predicate<in T?>): Boolean {
+    override fun removeIf(filter: Predicate<in T>): Boolean {
         var anyRemoved = false
         val it = this.iterator()
         while (it.hasNext()) {
@@ -317,7 +311,7 @@ open class Nodes<T : Node?> : ArrayList<T?> {
      *
      * @param operator the operator to apply to each node
      */
-    override fun replaceAll(operator: UnaryOperator<T?>) {
+    override fun replaceAll(operator: UnaryOperator<T>) {
         for (i in this.indices) {
             this.set(i, operator.apply(this.get(i)))
         }

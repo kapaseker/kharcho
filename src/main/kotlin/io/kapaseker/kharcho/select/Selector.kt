@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.select
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import io.kapaseker.kharcho.nodes.Element
 import io.kapaseker.kharcho.parser.TokenQueue

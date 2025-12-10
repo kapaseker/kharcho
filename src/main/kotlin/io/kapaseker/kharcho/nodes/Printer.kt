@@ -1,6 +1,7 @@
 package io.kapaseker.kharcho.nodes
 
 import io.kapaseker.kharcho.annotations.Nullable
+import io.kapaseker.kharcho.internal.QuietAppendable
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.parser.Tag
 import io.kapaseker.kharcho.select.NodeVisitor
@@ -8,16 +9,9 @@ import io.kapaseker.kharcho.select.NodeVisitor
 /** Base Printer  */
 internal open class Printer(
     val root: Node?,
-    accum: QuietAppendable,
-    settings: Document.OutputSettings
-) : NodeVisitor {
-    val accum: QuietAppendable
+    val accum: QuietAppendable,
     val settings: Document.OutputSettings
-
-    init {
-        this.accum = accum
-        this.settings = settings
-    }
+) : NodeVisitor {
 
     open fun addHead(el: Element, depth: Int) {
         el.outerHtmlHead(accum, settings)
@@ -78,7 +72,7 @@ internal open class Printer(
             super.addTail(el, depth)
 
             // clear the preserveWhitespace if this element is not, and there are none on the stack above
-            if (preserveWhitespace && el.tag.`is`(Tag.PreserveWhitespace)) {
+            if (preserveWhitespace && el.tag.andOption(Tag.PreserveWhitespace)) {
                 var parent = el.parent()
                 while (parent != null) {
                     if (parent.tag().preserveWhitespace()) return  // keep
@@ -141,7 +135,7 @@ internal open class Printer(
             if (isBlockEl(prevSib)) return true
 
             val parent = node.parentNode
-            if (!isBlockEl(parent) || parent.tag().`is`(Tag.InlineContainer) || !hasNonTextNodes(
+            if (!isBlockEl(parent) || parent.tag().andOption(Tag.InlineContainer) || !hasNonTextNodes(
                     parent
                 )
             ) return false
@@ -222,7 +216,7 @@ internal open class Printer(
             }
 
             fun tagIs(option: Int, @Nullable node: Node?): Boolean {
-                return node is Element && node.tag.`is`(option)
+                return node is Element && node.tag.andOption(option)
             }
         }
     }

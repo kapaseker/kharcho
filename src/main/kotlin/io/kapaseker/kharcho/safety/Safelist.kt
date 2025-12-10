@@ -5,7 +5,6 @@ import io.kapaseker.kharcho.helper.Validate.isTrue
 import io.kapaseker.kharcho.helper.Validate.notEmpty
 import io.kapaseker.kharcho.helper.Validate.notNull
 import io.kapaseker.kharcho.internal.Normalizer.lowerCase
-import io.kapaseker.kharcho.nodes.Attribute
 import io.kapaseker.kharcho.nodes.Attributes
 import io.kapaseker.kharcho.nodes.Element
 

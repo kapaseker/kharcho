@@ -1,10 +1,8 @@
 package io.kapaseker.kharcho.select
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.nodes.*
-import java.util.*
 
 /**
  * A list of [Element]s, with methods that act on every element in the list.
@@ -20,11 +18,11 @@ class Elements : Nodes<Element> {
 
     constructor(initialCapacity: Int) : super(initialCapacity)
 
-    constructor(elements: MutableCollection<Element?>?) : super(elements)
+    constructor(elements: MutableCollection<Element>) : super(elements)
 
-    constructor(elements: MutableList<Element?>?) : super(elements)
+    constructor(elements: MutableList<Element>) : super(elements)
 
-    constructor(vararg elements: Element?) : super(Arrays.asList<Element?>(*elements))
+    constructor(vararg elements: Element) : super(listOf<Element>(*elements))
 
     /**
      * Creates a deep copy of these elements.
@@ -47,8 +45,8 @@ class Elements : Nodes<Element> {
      * @since 1.19.2
      * @see .Elements
      */
-    override fun asList(): ArrayList<Element?> {
-        return ArrayList<Element?>(this)
+    override fun asList(): List<Element> {
+        return this.toList()
     }
 
     // attribute methods
@@ -59,7 +57,7 @@ class Elements : Nodes<Element> {
      * or if the no elements have the attribute, returns empty string.
      * @see .hasAttr
      */
-    fun attr(attributeKey: String?): String? {
+    fun attr(attributeKey: String): String {
         for (element in this) {
             if (element.hasAttr(attributeKey)) return element.attr(attributeKey)
         }
@@ -71,7 +69,7 @@ class Elements : Nodes<Element> {
      * @param attributeKey attribute key
      * @return true if any of the elements have the attribute; false if none do.
      */
-    fun hasAttr(attributeKey: String?): Boolean {
+    fun hasAttr(attributeKey: String): Boolean {
         for (element in this) {
             if (element.hasAttr(attributeKey)) return true
         }
@@ -85,8 +83,8 @@ class Elements : Nodes<Element> {
      * get absolute URLs from relative URLs, e.g.: `doc.select("a").eachAttr("abs:href")` .
      * @return a list of each element's attribute value for the attribute
      */
-    fun eachAttr(attributeKey: String?): MutableList<String?> {
-        val attrs: MutableList<String?> = ArrayList<String?>(size)
+    fun eachAttr(attributeKey: String): MutableList<String> {
+        val attrs: MutableList<String> = ArrayList(size)
         for (element in this) {
             if (element.hasAttr(attributeKey)) attrs.add(element.attr(attributeKey))
         }
@@ -99,7 +97,7 @@ class Elements : Nodes<Element> {
      * @param attributeValue attribute value
      * @return this
      */
-    fun attr(attributeKey: String?, attributeValue: String?): Elements {
+    fun attr(attributeKey: String, attributeValue: String): Elements {
         for (element in this) {
             element.attr(attributeKey, attributeValue)
         }
@@ -111,7 +109,7 @@ class Elements : Nodes<Element> {
      * @param attributeKey The attribute to remove.
      * @return this (for chaining)
      */
-    fun removeAttr(attributeKey: String?): Elements {
+    fun removeAttr(attributeKey: String): Elements {
         for (element in this) {
             element.removeAttr(attributeKey)
         }
@@ -123,7 +121,7 @@ class Elements : Nodes<Element> {
      * @param className class name to add
      * @return this
      */
-    fun addClass(className: String?): Elements {
+    fun addClass(className: String): Elements {
         for (element in this) {
             element.addClass(className)
         }
@@ -135,7 +133,7 @@ class Elements : Nodes<Element> {
      * @param className class name to remove
      * @return this
      */
-    fun removeClass(className: String?): Elements {
+    fun removeClass(className: String): Elements {
         for (element in this) {
             element.removeClass(className)
         }
@@ -147,7 +145,7 @@ class Elements : Nodes<Element> {
      * @param className class name to add if missing, or remove if present, from every element.
      * @return this
      */
-    fun toggleClass(className: String?): Elements {
+    fun toggleClass(className: String): Elements {
         for (element in this) {
             element.toggleClass(className)
         }
@@ -159,7 +157,7 @@ class Elements : Nodes<Element> {
      * @param className class name to check for
      * @return true if any do, false if none do
      */
-    fun hasClass(className: String?): Boolean {
+    fun hasClass(className: String): Boolean {
         for (element in this) {
             if (element.hasClass(className)) return true
         }
@@ -171,7 +169,7 @@ class Elements : Nodes<Element> {
      * @return The form element's value, or empty if not set.
      * @see Element.val
      */
-    fun `val`(): String? {
+    fun value(): String? {
         if (size > 0)
             return first()!!.`val`() // first() != null as size() > 0
         else return ""
@@ -182,7 +180,7 @@ class Elements : Nodes<Element> {
      * @param value The value to set into each matched element
      * @return this (for chaining)
      */
-    fun `val`(value: String?): Elements {
+    fun value(value: String?): Elements {
         for (element in this) element.`val`(value)
         return this
     }
@@ -304,7 +302,7 @@ class Elements : Nodes<Element> {
      * @return this, for chaining
      * @see Element.before
      */
-    override fun before(html: String?): Elements {
+    override fun before(html: String): Elements {
         super.before(html)
         return this
     }
@@ -316,7 +314,7 @@ class Elements : Nodes<Element> {
      * @return this, for chaining
      * @see Element.after
      */
-    override fun after(html: String?): Elements {
+    override fun after(html: String): Elements {
         super.after(html)
         return this
     }
@@ -331,7 +329,7 @@ class Elements : Nodes<Element> {
      * @return this (for chaining)
      * @see Element.wrap
      */
-    override fun wrap(html: String?): Elements {
+    override fun wrap(html: String): Elements {
         super.wrap(html)
         return this
     }
@@ -424,7 +422,7 @@ class Elements : Nodes<Element> {
      * @see .expectFirst
      * @since 1.19.1
      */
-    fun selectFirst(cssQuery: String?): @Nullable Element? {
+    fun selectFirst(cssQuery: String): Element? {
         return Selector.selectFirst(cssQuery, this)
     }
 
@@ -437,7 +435,7 @@ class Elements : Nodes<Element> {
      * @since 1.19.1
      */
     fun expectFirst(cssQuery: String?): Element {
-        return Validate.expectNotNull<@Nullable Element>(
+        return Validate.expectNotNull(
             Selector.selectFirst(cssQuery, this),
             "No elements matched the query '%s' in the elements.", cssQuery
         )
@@ -553,7 +551,7 @@ class Elements : Nodes<Element> {
         return siblings(query, false, true)
     }
 
-    private fun siblings(query: @Nullable String?, next: Boolean, all: Boolean): Elements {
+    private fun siblings(query: String?, next: Boolean, all: Boolean): Elements {
         val els = Elements()
         val eval = if (query != null) Selector.evaluatorOf(query) else null
         for (e in this) {
@@ -622,8 +620,8 @@ class Elements : Nodes<Element> {
      * @return a list of [FormElement]s pulled from the matched elements. The list will be empty if the elements contain
      * no forms.
      */
-    fun forms(): MutableList<FormElement?> {
-        val forms = ArrayList<FormElement?>()
+    fun forms(): MutableList<FormElement> {
+        val forms = ArrayList<FormElement>()
         for (el in this) if (el is FormElement) forms.add(el)
         return forms
     }
@@ -633,7 +631,7 @@ class Elements : Nodes<Element> {
      * @return Comment nodes, or an empty list if none.
      */
     fun comments(): MutableList<Comment?> {
-        return childNodesOfType<Comment?>(Comment::class.java)
+        return childNodesOfType<Comment>(Comment::class.java)
     }
 
     /**
@@ -641,7 +639,7 @@ class Elements : Nodes<Element> {
      * @return TextNode nodes, or an empty list if none.
      */
     fun textNodes(): MutableList<TextNode?> {
-        return childNodesOfType<TextNode?>(TextNode::class.java)
+        return childNodesOfType<TextNode>(TextNode::class.java)
     }
 
     /**
@@ -650,10 +648,10 @@ class Elements : Nodes<Element> {
      * @return Comment nodes, or an empty list if none.
      */
     fun dataNodes(): MutableList<DataNode?> {
-        return childNodesOfType<DataNode?>(DataNode::class.java)
+        return childNodesOfType(DataNode::class.java)
     }
 
-    private fun <T : Node?> childNodesOfType(tClass: Class<T?>): MutableList<T?> {
+    private fun <T : Node?> childNodesOfType(tClass: Class<T>): MutableList<T?> {
         val nodes = ArrayList<T?>()
         for (el in this) {
             for (i in 0..<el.childNodeSize()) {
@@ -673,7 +671,7 @@ class Elements : Nodes<Element> {
      * @return the old Element at this index
      * @since 1.17.1
      */
-    override fun set(index: Int, element: Element?): Element? {
+    override fun set(index: Int, element: Element): Element {
         return super.set(index, element)
     }
 
@@ -685,7 +683,7 @@ class Elements : Nodes<Element> {
      * @see .deselect
      * @since 1.17.1
      */
-    override fun remove(index: Int): Element? {
+    override fun removeAt(index: Int): Element {
         return super.removeAt(index)
     }
 

@@ -368,7 +368,7 @@ class HtmlTreeBuilder : TreeBuilder() {
         val data = characterToken.getData()
 
         if (characterToken.isCData()) node = CDataNode(data)
-        else if (el.tag().`is`(Tag.Companion.Data)) node = DataNode(data)
+        else if (el.tag().andOption(Tag.Companion.Data)) node = DataNode(data)
         else node = TextNode(data)
         el.appendChild(node) // doesn't use insertNode, because we don't foster these; and will always have a stack.
         onNodeInserted(node)

@@ -20,7 +20,7 @@ open class TextNode
     /**
      * Get the text content of this text node.
      * @return Unencoded, normalised text.
-     * @see TextNode.getWholeText
+     * @see TextNode.wholeText
      */
     open fun text(): String {
         return StringUtil.normaliseWhitespace(this.wholeText)

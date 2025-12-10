@@ -73,15 +73,14 @@ internal class TokenData {
         value = null
     }
 
-    fun value(): String? {
+    fun value(): String {
         if (builder != null) {
             // in rare case we get hit twice, don't toString the builder twice
             value = builder.toString()
             StringUtil.releaseBuilder(builder!!)
             builder = null
-            return value
         }
-        return if (value != null) value else ""
+        return value ?: ""
     }
 
     override fun toString(): String {

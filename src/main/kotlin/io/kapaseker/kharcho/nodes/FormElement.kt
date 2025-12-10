@@ -1,6 +1,6 @@
 package io.kapaseker.kharcho.nodes
 
-import io.kapaseker.kharcho.annotations.Nullable
+import io.kapaseker.kharcho.internal.SharedConstants
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.parser.Tag
 import io.kapaseker.kharcho.select.Elements
@@ -18,7 +18,7 @@ class FormElement
  * @param baseUri    the base URI
  * @param attributes initial attributes
  */
-    (tag: Tag?, @Nullable baseUri: String?, @Nullable attributes: Attributes?) :
+    (tag: Tag, baseUri: String?, attributes: Attributes?) :
     Element(tag, baseUri, attributes) {
     private val linkedEls = Elements()
 
@@ -53,8 +53,8 @@ class FormElement
         linkedEls.remove(out)
     }
 
-    override fun clone(): FormElement? {
-        return super.clone() as FormElement?
+    override fun clone(): FormElement {
+        return super.clone() as FormElement
     }
 
     companion object {

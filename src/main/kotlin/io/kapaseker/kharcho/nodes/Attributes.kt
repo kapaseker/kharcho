@@ -1,9 +1,13 @@
 package io.kapaseker.kharcho.nodes
 
-import io.kapaseker.kharcho.annotations.Nullable
 import io.kapaseker.kharcho.helper.Validate
+import io.kapaseker.kharcho.internal.Normalizer.lowerCase
+import io.kapaseker.kharcho.internal.QuietAppendable
+import io.kapaseker.kharcho.internal.SharedConstants
+import io.kapaseker.kharcho.internal.SharedConstants.AttrRangeKey
 import io.kapaseker.kharcho.internal.StringUtil
 import io.kapaseker.kharcho.parser.ParseSettings
+import org.jetbrains.annotations.Nullable
 import java.util.*
 
 /**
@@ -26,14 +30,11 @@ import java.util.*
 class Attributes : Iterable<Attribute>, Cloneable {
     // the number of instance fields is kept as low as possible giving an object size of 24 bytes
     @JvmField
-    var size: Int =
-        0 // number of slots used (not total capacity, which is keys.length). Package visible for actual size (incl internal)
+    var size: Int = 0 // number of slots used (not total capacity, which is keys.length). Package visible for actual size (incl internal)
 
-    var keys: Array<String> =
-        arrayOfNulls<String>(InitialCapacity) // keys is not null, but contents may be. Same for vals
+    var keys: Array<String?> = Array<String?>(InitialCapacity) { "" } // keys is not null, but contents may be. Same for vals
 
-    var vals: Array<Any?> =
-        arrayOfNulls<Any>(InitialCapacity) // Genericish: all non-internal attribute values must be Strings and are cast on access.
+    var vals: Array<Any?> = Array<Any?>(InitialCapacity) { "" } // Genericish: all non-internal attribute values must be Strings and are cast on access.
 
     // todo - make keys iterable without creating Attribute objects
     // check there's room for more
@@ -50,7 +51,7 @@ class Attributes : Iterable<Attribute>, Cloneable {
 
     fun indexOfKey(key: String): Int {
         Validate.notNull(key)
-        for (i in 0..<size) {
+        for (i in 0..size) {
             if (key == keys[i]) return i
         }
         return NotFound
@@ -83,7 +84,6 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @return the Attribute for this key, or null if not present.
      * @since 1.17.2
      */
-    @Nullable
     fun attribute(key: String): Attribute? {
         val i = indexOfKey(key)
         return if (i == NotFound) null else Attribute(key, checkNotNull(vals[i]), this)
@@ -162,13 +162,12 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @see .userData
      * @since 1.17.1
      */
-    @Nullable
     fun userData(key: String): Any? {
         Validate.notNull(key)
         if (!hasUserData()) return null // no user data exists
 
         val userData = userData()
-        return userData.get(key)
+        return userData[key]
     }
 
     /**
@@ -179,17 +178,17 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @see .userData
      * @since 1.17.1
      */
-    fun userData(key: String, @Nullable value: Any?): Attributes {
+    fun userData(key: String, value: Any?): Attributes {
         Validate.notNull(key)
         if (value == null && !hasKey(SharedConstants.UserDataKey)) return this // no user data exists, so short-circuit
 
         val userData = userData()
         if (value == null) userData.remove(key)
-        else userData.put(key, value)
+        else userData[key] = value
         return this
     }
 
-    fun putIgnoreCase(key: String, @Nullable value: String?) {
+    fun putIgnoreCase(key: String, value: String?) {
         val i = indexOfKeyIgnoreCase(key)
         if (i != NotFound) {
             vals[i] = value
@@ -303,8 +302,8 @@ class Attributes : Iterable<Attribute>, Cloneable {
     fun size(): Int {
         if (size == 0) return 0
         var count = 0
-        for (i in 0..<size) {
-            if (!isInternalKey(keys[i])) count++
+        for (i in 0..size) {
+            if (keys[i]?.let { !isInternalKey(it) } ?: false) count++
         }
         return count
     }
@@ -326,8 +325,7 @@ class Attributes : Iterable<Attribute>, Cloneable {
         if (incomingSize == 0) return
         checkCapacity(size + incomingSize)
 
-        val needsPut =
-            size != 0 // if this set is empty, no need to check existing set, so can add() vs put()
+        val needsPut = size != 0 // if this set is empty, no need to check existing set, so can add() vs put()
         // (and save bashing on the indexOfKey()
         for (attr in incoming) {
             if (needsPut) put(attr)
@@ -349,18 +347,16 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @see Element.endSourceRange
      * @since 1.17.1
      */
-    fun sourceRange(key: String): AttributeRange {
-        if (!hasKey(key)) return AttributeRange.UntrackedAttr
-        val ranges: MutableMap<String?, AttributeRange?>? = this.ranges
-        if (ranges == null) return Range.AttributeRange.UntrackedAttr
-        val range: AttributeRange? = ranges.get(key)
-        return if (range != null) range else Range.AttributeRange.UntrackedAttr
+    fun sourceRange(key: String): Range.AttributeRange {
+        if (!hasKey(key)) return Range.AttributeRange.UntrackedAttr
+        val ranges: MutableMap<String, Range.AttributeRange> = this.ranges ?: return Range.AttributeRange.UntrackedAttr
+        val range: Range.AttributeRange? = ranges[key]
+        return range ?: Range.AttributeRange.UntrackedAttr
     }
 
-    @get:Nullable
-    val ranges: MutableMap<String?, AttributeRange>?
+    val ranges: MutableMap<String, Range.AttributeRange>?
         /** Get the Ranges, if tracking is enabled; null otherwise.  */
-        get() = userData(AttrRangeKey) as MutableMap<String?, AttributeRange?>?
+        get() = userData(AttrRangeKey) as? MutableMap<String, Range.AttributeRange>
 
     /**
      * Set the source ranges (start to end position) from which this attribute's **name** and **value** were parsed.
@@ -369,21 +365,17 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @return these attributes, for chaining
      * @since 1.18.2
      */
-    fun sourceRange(key: String, range: AttributeRange): Attributes {
+    fun sourceRange(key: String, range: Range.AttributeRange): Attributes {
         Validate.notNull(key)
         Validate.notNull(range)
-        var ranges: MutableMap<String?, AttributeRange?>? = this.ranges
-        if (ranges == null) {
-            ranges = HashMap<String?, AttributeRange?>()
-            userData(AttrRangeKey, ranges)
-        }
-        ranges.put(key, range)
+        val ranges: MutableMap<String, Range.AttributeRange> = this.ranges ?: HashMap<String, Range.AttributeRange>().also { userData(AttrRangeKey, it) }
+        ranges[key] = range
         return this
     }
 
 
     override fun iterator(): MutableIterator<Attribute> {
-        return object : MutableIterator<Attribute?> {
+        return object : MutableIterator<Attribute> {
             var expectedSize: Int = size
             var i: Int = 0
 
@@ -451,23 +443,19 @@ class Attributes : Iterable<Attribute>, Cloneable {
     fun html(): String {
         val sb = StringUtil.borrowBuilder()
         html(
-            QuietAppendable.wrap(sb),
-            Document.OutputSettings()
+            QuietAppendable.wrap(sb), Document.OutputSettings()
         ) // output settings a bit funky, but this html() seldom used
         return StringUtil.releaseBuilder(sb)
     }
 
     fun html(accum: QuietAppendable, out: Document.OutputSettings) {
         val sz = size
-        for (i in 0..<sz) {
+        for (i in 0..sz) {
             val key = kotlin.checkNotNull(keys[i])
             if (isInternalKey(key)) continue
             val validated = Attribute.getValidKey(key, out.syntax())
             if (validated != null) Attribute.htmlNoValidate(
-                validated,
-                vals[i] as String?,
-                accum.append(' '),
-                out
+                validated, vals[i] as String?, accum.append(' '), out
             )
         }
     }
@@ -482,13 +470,13 @@ class Attributes : Iterable<Attribute>, Cloneable {
      * @param o attributes to compare with
      * @return if both sets of attributes have the same content
      */
-    override fun equals(@Nullable o: Any?): Boolean {
+    override fun equals(o: Any?): Boolean {
         if (this === o) return true
         if (o == null || javaClass != o.javaClass) return false
 
         val that = o as Attributes
         if (size != that.size) return false
-        for (i in 0..<size) {
+        for (i in 0..size) {
             val key = kotlin.checkNotNull(keys[i])
             val thatI = that.indexOfKey(key)
             if (thatI == NotFound || vals[i] != that.vals[thatI]) return false
@@ -552,8 +540,7 @@ class Attributes : Iterable<Attribute>, Cloneable {
             var j = i + 1
             while (j < size) {
                 if ((preserve && keyI == keys[j]) || (!preserve && keyI.equals(
-                        keys[j],
-                        ignoreCase = true
+                        keys[j], ignoreCase = true
                     ))
                 ) {
                     dupes++
@@ -566,8 +553,8 @@ class Attributes : Iterable<Attribute>, Cloneable {
         return dupes
     }
 
-    private class Dataset(private val attributes: Attributes) : AbstractMap<String?, String?>() {
-        override fun entrySet(): MutableSet<MutableMap.MutableEntry<String?, String?>?> {
+    private class Dataset(private val attributes: Attributes) : AbstractMap<String, String>() {
+        override fun entrySet(): MutableSet<MutableMap.MutableEntry<String?, String?>> {
             return Dataset.EntrySet()
         }
 
@@ -578,33 +565,33 @@ class Attributes : Iterable<Attribute>, Cloneable {
             return oldValue
         }
 
-        private inner class EntrySet : AbstractSet<MutableMap.MutableEntry<String?, String?>?>() {
-            override fun iterator(): MutableIterator<MutableMap.MutableEntry<String?, String?>?> {
+        private inner class EntrySet : AbstractSet<MutableMap.MutableEntry<String, String>>() {
+            override fun iterator(): MutableIterator<MutableMap.MutableEntry<String, String>> {
                 return Dataset.DatasetIterator()
             }
 
             override fun size(): Int {
                 var count = 0
-                val iter: MutableIterator<MutableMap.MutableEntry<String?, String?>?> =
-                    Dataset.DatasetIterator()
+                val iter: MutableIterator<MutableMap.MutableEntry<String?, String?>?> = Dataset.DatasetIterator()
                 while (iter.hasNext()) count++
                 return count
             }
         }
 
-        private inner class DatasetIterator :
-            MutableIterator<MutableMap.MutableEntry<String?, String?>?> {
+        private inner class DatasetIterator : MutableIterator<MutableMap.MutableEntry<String, String>> {
             private val attrIter = attributes.iterator()
             private var attr: Attribute? = null
+
             override fun hasNext(): Boolean {
                 while (attrIter.hasNext()) {
-                    attr = attrIter.next()
-                    if (attr!!.isDataAttribute) return true
+                    val attr = attrIter.next()
+                    this.attr = attr
+                    if (attr.isDataAttribute) return true
                 }
                 return false
             }
 
-            override fun next(): MutableMap.MutableEntry<String?, String?> {
+            override fun next(): MutableMap.MutableEntry<String, String> {
                 return Attribute(attr!!.getKey().substring(dataPrefix.length), attr!!.value)
             }
 
@@ -617,14 +604,12 @@ class Attributes : Iterable<Attribute>, Cloneable {
     companion object {
         // The Attributes object is only created on the first use of an attribute; the Element will just have a null
         // Attribute slot otherwise
-        const val InternalPrefix: Char =
-            '/' // Indicates an internal key. Can't be set via HTML. (It could be set via accessor, but not too worried about that. Suppressed from list, iter, size.)
-        protected const val dataPrefix: String = "data-" // data attributes
+        const val InternalPrefix: Char = '/' // Indicates an internal key. Can't be set via HTML. (It could be set via accessor, but not too worried about that. Suppressed from list, iter, size.)
+        const val dataPrefix: String = "data-" // data attributes
         private const val EmptyString = ""
 
         // manages the key/val arrays
-        private const val InitialCapacity =
-            3 // sampling found mean count when attrs present = 1.49; 1.08 overall. 2.6:1 don't have any attrs.
+        private const val InitialCapacity = 3 // sampling found mean count when attrs present = 1.49; 1.08 overall. 2.6:1 don't have any attrs.
         private const val GrowthFactor = 2
         val NotFound: Int = -1
 

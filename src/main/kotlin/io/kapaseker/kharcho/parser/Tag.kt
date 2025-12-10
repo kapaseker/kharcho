@@ -1,6 +1,5 @@
 package io.kapaseker.kharcho.parser
 
-import io.kapaseker.kharcho.annotations.Nullable
 import java.util.*
 
 /**
@@ -17,9 +16,9 @@ class Tag internal constructor(
      * @return the tag's name
      */
     var name: String, // always the lower case version of this tag, regardless of case preservation mode
-    var normalName: String?, namespace: String?
+    var normalName: String,
+    var namespace: String
 ) : Cloneable {
-    var namespace: String?
     var options: Int = 0
 
     /**
@@ -31,9 +30,9 @@ class Tag internal constructor(
      * @see TagSet.valueOf
      * @since 1.20.1
      */
-    constructor(tagName: String, namespace: String?) : this(
+    constructor(tagName: String, namespace: String) : this(
         tagName,
-        ParseSettings.Companion.normalName(tagName),
+        ParseSettings.normalName(tagName),
         namespace
     )
 
@@ -47,15 +46,9 @@ class Tag internal constructor(
      */
     constructor(tagName: String) : this(
         tagName,
-        ParseSettings.Companion.normalName(tagName),
-        Parser.Companion.NamespaceHtml
+        ParseSettings.normalName(tagName),
+        Parser.NamespaceHtml
     )
-
-    /** Path for TagSet defaults, no options set; normal name is already LC.  */
-    init {
-        this.normalName = normalName
-        this.namespace = namespace
-    }
 
     /**
      * Get this tag's name.
@@ -73,7 +66,7 @@ class Tag internal constructor(
      */
     fun name(tagName: String): Tag {
         this.name = tagName
-        this.normalName = ParseSettings.Companion.normalName(tagName)
+        this.normalName = ParseSettings.normalName(tagName)
         return this
     }
 
@@ -97,17 +90,16 @@ class Tag internal constructor(
      * @return the tag's local name
      * @since 1.20.1
      */
-    fun localName(): String? {
+    fun localName(): String {
         val pos = name.indexOf(':')
-        if (pos == -1) return this.name
-        else return name.substring(pos + 1)
+        return if (pos == -1) this.name else name.substring(pos + 1)
     }
 
     /**
      * Get this tag's normalized (lowercased) name.
      * @return the tag's normal name.
      */
-    fun normalName(): String? {
+    fun normalName(): String {
         return normalName
     }
 
@@ -115,7 +107,7 @@ class Tag internal constructor(
      * Get this tag's namespace.
      * @return the tag's namespace
      */
-    fun namespace(): String? {
+    fun namespace(): String {
         return namespace
     }
 
@@ -125,7 +117,7 @@ class Tag internal constructor(
      * @return this tag
      * @since 1.20.1
      */
-    fun namespace(namespace: String?): Tag {
+    fun namespace(namespace: String): Tag {
         this.namespace = namespace
         return this
     }
@@ -151,7 +143,7 @@ class Tag internal constructor(
      * @return true if the option is set
      * @since 1.20.1
      */
-    fun `is`(option: Int): Boolean {
+    fun andOption(option: Int): Boolean {
         return (options and option) != 0
     }
 
@@ -241,11 +233,8 @@ class Tag internal constructor(
     /**
      * If this Tag uses a specific text TokeniserState for its content, returns that; otherwise null.
      */
-    @Nullable
     fun textState(): TokeniserState? {
-        if (`is`(RcData)) return TokeniserState.Rcdata
-        if (`is`(Data)) return TokeniserState.Rawtext
-        else return null
+        return if (andOption(RcData)) TokeniserState.Rcdata else if (andOption(Data)) TokeniserState.Rawtext else null
     }
 
     override fun equals(o: Any?): Boolean {
@@ -271,9 +260,9 @@ class Tag internal constructor(
         return this.name
     }
 
-    public override fun clone(): Tag? {
+    public override fun clone(): Tag {
         try {
-            return super.clone() as Tag?
+            return super.clone() as Tag
         } catch (e: CloneNotSupportedException) {
             throw RuntimeException(e)
         }
@@ -344,12 +333,11 @@ class Tag internal constructor(
         @JvmStatic
         @JvmOverloads
         fun valueOf(
-            tagName: String?,
-            namespace: String? = Parser.Companion.NamespaceHtml,
+            tagName: String,
+            namespace: String = Parser.Companion.NamespaceHtml,
             settings: ParseSettings = ParseSettings.Companion.preserveCase
-        ): Tag? {
-            return TagSet.Companion.Html()
-                .valueOf(tagName, null, namespace, settings.preserveTagCase())
+        ): Tag {
+            return TagSet.Html().valueOf(tagName, null, namespace, settings.preserveTagCase())
         }
 
         /**
@@ -365,8 +353,8 @@ class Tag internal constructor(
          * @see .valueOf
          */
         @JvmStatic
-        fun valueOf(tagName: String?, settings: ParseSettings): Tag? {
-            return valueOf(tagName, Parser.Companion.NamespaceHtml, settings)
+        fun valueOf(tagName: String, settings: ParseSettings): Tag {
+            return valueOf(tagName, Parser.NamespaceHtml, settings)
         }
 
         /**
@@ -375,8 +363,8 @@ class Tag internal constructor(
          * @param tagName name of tag
          * @return if known HTML tag
          */
-        fun isKnownTag(tagName: String?): Boolean {
-            return TagSet.Companion.HtmlTagSet.get(tagName, Parser.Companion.NamespaceHtml) != null
+        fun isKnownTag(tagName: String): Boolean {
+            return TagSet.HtmlTagSet.get(tagName, Parser.Companion.NamespaceHtml) != null
         }
     }
 }

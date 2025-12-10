@@ -819,7 +819,7 @@ protected constructor() : Cloneable {
         outerHtml(QuietAppendable.wrap(accum))
     }
 
-    protected fun outerHtml(accum: QuietAppendable?) {
+    protected fun outerHtml(accum: QuietAppendable) {
         val printer = Printer.printerFor(this, accum)
         printer.traverse(this)
     }

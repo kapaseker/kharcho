@@ -5,7 +5,7 @@ import io.kapaseker.kharcho.internal.QuietAppendable
 /**
  * A Character Data node, to support CDATA sections.
  */
-class CDataNode(text: String?) : TextNode(text) {
+class CDataNode(text: String) : TextNode(text) {
     override fun nodeName(): String {
         return "#cdata"
     }
@@ -14,18 +14,18 @@ class CDataNode(text: String?) : TextNode(text) {
      * Get the un-encoded, **non-normalized** text content of this CDataNode.
      * @return un-encoded, non-normalized text
      */
-    override fun text(): String? {
-        return getWholeText()
+    override fun text(): String {
+        return wholeText
     }
 
-    override fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings?) {
+    override fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings) {
         accum
-            .append("<![CDATA[")!!
-            .append(getWholeText())!!
+            .append("<![CDATA[")
+            .append(wholeText)
             .append("]]>")
     }
 
-    override fun clone(): CDataNode? {
-        return super.clone() as CDataNode?
+    override fun clone(): CDataNode {
+        return super.clone() as CDataNode
     }
 }

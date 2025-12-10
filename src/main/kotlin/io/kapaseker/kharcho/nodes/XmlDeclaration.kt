@@ -14,7 +14,7 @@ class XmlDeclaration
  * @param name of declaration
  * @param isDeclaration `true` if a declaration (first char is `!`), otherwise a processing instruction (first char is `?`).
  */(
-    name: String?,
+    name: String,
     /**
      * First char is `!` if isDeclaration, like in `<!ENTITY ...>`.
      * Otherwise, is `?`, a processing instruction, like `<?xml .... ?>` (and note trailing `?`).
@@ -29,7 +29,7 @@ class XmlDeclaration
      * Get the name of this declaration.
      * @return name of this declaration.
      */
-    fun name(): String? {
+    fun name(): String {
         return coreValue()
     }
 
@@ -56,7 +56,7 @@ class XmlDeclaration
                 accum.append(' ')
                 // basically like Attribute, but skip empty vals in XML
                 accum.append(key)
-                if (!`val`!!.isEmpty()) {
+                if (!`val`.isEmpty()) {
                     accum.append("=\"")
                     Entities.escape(accum, `val`, out, Entities.ForAttribute)
                     accum.append('"')
@@ -67,23 +67,23 @@ class XmlDeclaration
 
     override fun outerHtmlHead(accum: QuietAppendable, out: Document.OutputSettings) {
         accum
-            .append("<")!!
-            .append(if (isDeclaration) "!" else "?")!!
+            .append("<")
+            .append(if (isDeclaration) "!" else "?")
             .append(coreValue())
         getWholeDeclaration(accum, out)
         accum
-            .append(if (isDeclaration) "" else "?")!!
+            .append(if (isDeclaration) "" else "?")
             .append(">")
     }
 
-    override fun outerHtmlTail(accum: QuietAppendable?, out: Document.OutputSettings?) {
+    override fun outerHtmlTail(accum: QuietAppendable, out: Document.OutputSettings) {
     }
 
     override fun toString(): String {
         return outerHtml()
     }
 
-    override fun clone(): XmlDeclaration? {
-        return super.clone() as XmlDeclaration?
+    override fun clone(): XmlDeclaration {
+        return super.clone() as XmlDeclaration
     }
 }

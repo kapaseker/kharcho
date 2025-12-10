@@ -1,5 +1,7 @@
 package io.kapaseker.kharcho.nodes
 
+import io.kapaseker.kharcho.internal.SharedConstants.EndRangeKey
+import io.kapaseker.kharcho.internal.SharedConstants.RangeKey
 import io.kapaseker.kharcho.internal.StringUtil.borrowBuilder
 import io.kapaseker.kharcho.internal.StringUtil.releaseBuilder
 import java.util.*
@@ -109,7 +111,7 @@ class Range
      * @param pos position index
      * @param lineNumber line number
      * @param columnNumber column number
-     */(private val pos: Int, private val lineNumber: Int, private val columnNumber: Int) {
+     */(val pos: Int, private val lineNumber: Int, private val columnNumber: Int) {
         /**
          * Gets the position index (0-based) of the original input source that this Position was read at. This tracks the
          * total number of characters read into the source at this position, regardless of the number of preceding lines.

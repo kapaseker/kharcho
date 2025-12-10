@@ -23,12 +23,12 @@ abstract class Evaluator protected constructor() {
      * @return a predicate that accepts an Element to test for matches with this Evaluator
      * @since 1.17.1
      */
-    fun asPredicate(root: Element?): Predicate<Element?> {
-        return Predicate { element: Element? -> matches(root, element) }
+    fun asPredicate(root: Element): Predicate<Element> {
+        return Predicate { element: Element -> matches(root, element) }
     }
 
-    fun asNodePredicate(root: Element?): Predicate<Node?> {
-        return Predicate { node: Node? -> matches(root, node) }
+    fun asNodePredicate(root: Element): Predicate<Node> {
+        return Predicate { node: Node -> matches(root, node) }
     }
 
     /**
@@ -39,9 +39,9 @@ abstract class Evaluator protected constructor() {
      * @return Returns <tt>true</tt> if the requirements are met or
      * <tt>false</tt> otherwise
      */
-    abstract fun matches(root: Element?, element: Element?): Boolean
+    abstract fun matches(root: Element, element: Element): Boolean
 
-    fun matches(root: Element?, node: Node?): Boolean {
+    fun matches(root: Element, node: Node): Boolean {
         if (node is Element) {
             return matches(root, node)
         } else if (node is LeafNode && wantsNodes()) {
@@ -50,7 +50,7 @@ abstract class Evaluator protected constructor() {
         return false
     }
 
-    open fun matches(root: Element?, leafNode: LeafNode?): Boolean {
+    open fun matches(root: Element, leafNode: LeafNode): Boolean {
         return false
     }
 
@@ -75,12 +75,12 @@ abstract class Evaluator protected constructor() {
     /**
      * Evaluator for tag name
      */
-    class Tag(private val tagName: String?) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+    class Tag(private val tagName: String) : Evaluator() {
+        override fun matches(root: Element, element: Element): Boolean {
             return (element.nameIs(tagName))
         }
 
-        protected override fun cost(): Int {
+        override fun cost(): Int {
             return 1
         }
 
@@ -93,7 +93,7 @@ abstract class Evaluator protected constructor() {
      * Evaluator for tag name that starts with prefix; used for ns|*
      */
     class TagStartsWith(private val tagName: String) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+        override fun matches(root: Element, element: Element): Boolean {
             return (element.normalName().startsWith(tagName))
         }
 
@@ -107,7 +107,7 @@ abstract class Evaluator protected constructor() {
      * Evaluator for tag name that ends with suffix; used for *|el
      */
     class TagEndsWith(private val tagName: String) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+        override fun matches(root: Element, element: Element): Boolean {
             return (element.normalName().endsWith(tagName))
         }
 
@@ -120,11 +120,11 @@ abstract class Evaluator protected constructor() {
      * Evaluator for element id
      */
     class Id(private val id: String) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+        override fun matches(root: Element, element: Element): Boolean {
             return (id == element.id())
         }
 
-        protected override fun cost(): Int {
+        override fun cost(): Int {
             return 2
         }
 
@@ -136,12 +136,12 @@ abstract class Evaluator protected constructor() {
     /**
      * Evaluator for element class
      */
-    class Class(private val className: String?) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+    class Class(private val className: String) : Evaluator() {
+        override fun matches(root: Element, element: Element): Boolean {
             return (element.hasClass(className))
         }
 
-        protected override fun cost(): Int {
+        override fun cost(): Int {
             return 8 // does whitespace scanning; more than .contains()
         }
 
@@ -153,12 +153,12 @@ abstract class Evaluator protected constructor() {
     /**
      * Evaluator for attribute name matching
      */
-    class Attribute(private val key: String?) : Evaluator() {
-        override fun matches(root: Element?, element: Element): Boolean {
+    class Attribute(private val key: String) : Evaluator() {
+        override fun matches(root: Element, element: Element): Boolean {
             return element.hasAttr(key)
         }
 
-        protected override fun cost(): Int {
+        override fun cost(): Int {
             return 2
         }
 
@@ -178,7 +178,7 @@ abstract class Evaluator protected constructor() {
             this.keyPrefix = Normalizer.lowerCase(keyPrefix)
         }
 
-        override fun matches(root: Element?, element: Element): Boolean {
+        override fun matches(root: Element, element: Element): Boolean {
             val values = element.attributes().asList()
             for (attribute in values) {
                 if (Normalizer.lowerCase(attribute.key).startsWith(keyPrefix)) return true
@@ -186,7 +186,7 @@ abstract class Evaluator protected constructor() {
             return false
         }
 
-        protected override fun cost(): Int {
+        override fun cost(): Int {
             return 6
         }
 

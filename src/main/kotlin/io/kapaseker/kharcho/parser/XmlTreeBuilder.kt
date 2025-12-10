@@ -150,7 +150,7 @@ class XmlTreeBuilder : TreeBuilder() {
         val data = token.getData()
         val node: LeafNode?
         if (token.isCData()) node = CDataNode(data)
-        else if (currentElement().tag().`is`(Tag.Companion.Data)) node = DataNode(data)
+        else if (currentElement().tag().andOption(Tag.Companion.Data)) node = DataNode(data)
         else node = TextNode(data)
         insertLeafNode(node)
     }
